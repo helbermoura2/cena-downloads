@@ -1,5 +1,7 @@
 # CENA — atualizações para Android
 
-Este repositório será usado para publicar versões do aplicativo CENA para Android. O canal de atualizações ainda está em preparação; nenhuma versão foi publicada aqui.
+[Baixar o CENA 0.15.0 para Android](https://github.com/helbermoura2/cena-downloads/releases/download/v0.15.0/CENA-0.15.0.apk)
 
-A assinatura e o código de desenvolvimento permanecem em armazenamento privado.
+Este repositório publica versões do CENA. O recurso de atualização pelo próprio aplicativo está em desenvolvimento.
+
+Instale sobre a versão existente para preservar seus dados. O código de desenvolvimento e a chave de assinatura permanecem privados.
