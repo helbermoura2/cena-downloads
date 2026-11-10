@@ -50,7 +50,7 @@ jobs:
           npm test
           node scripts/check-cover-identification.mjs
           python3 -m venv /tmp/cena-browser
-          /tmp/cena-browser/bin/pip install --quiet playwright pyyaml
+          /tmp/cena-browser/bin/pip install --quiet playwright pyyaml pillow
           /tmp/cena-browser/bin/python scripts/check-navigation-browser.py
           /tmp/cena-browser/bin/python scripts/check-recent-history-browser.py
           /tmp/cena-browser/bin/python scripts/check-streaming-browser.py
