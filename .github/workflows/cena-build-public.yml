@@ -119,6 +119,7 @@ jobs:
         run: |
           python3 scripts/check-packaged-apk.py android/app/build/outputs/apk/debug/app-debug.apk
           curl -fL --retry 3 'https://github.com/helbermoura2/cena-downloads/releases/download/v0.16.0/CENA-0.16.0.apk' -o /tmp/CENA-0.16.0.apk
+          echo 'e08ca5b39d333b82e4cf43cf6e5f491d287a7e5143acdc57be9e9c4ddc7e3ee2  /tmp/CENA-0.16.0.apk' | sha256sum -c -
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs /tmp/CENA-0.16.0.apk > /tmp/cena-old-cert.txt
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs android/app/build/outputs/apk/debug/app-debug.apk > /tmp/cena-new-cert.txt
           python3 -c "from pathlib import Path; import re; get=lambda p:re.search(r'Signer #1 certificate SHA-256 digest: ([0-9a-f]+)',Path(p).read_text()).group(1); assert get('/tmp/cena-old-cert.txt')==get('/tmp/cena-new-cert.txt'), 'Assinatura divergente'"
