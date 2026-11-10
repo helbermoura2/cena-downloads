@@ -1,0 +1,22 @@
+name: Publicar CENA 0.16.0
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/cena-release-016.yml']
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar e verificar APK assinado
+        env:
+          APK_URL: 'https://release-assets.githubusercontent.com/github-production-release-asset/1440535764/e25e902d-bd89-4ab8-a217-b28a47ef247d?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-11-10T21%3A07%3A57Z&rscd=attachment%3B+filename%3DCENA-0.16.0.apk&rsct=application%2Fvnd.android.package-archive&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-11-10T20%3A07%3A36Z&ske=2026-11-10T21%3A07%3A57Z&sks=b&skv=2018-11-09&sig=QH4e3ls%2Fi8%2BZWYEqoBcDppa5KquQPCcuti250ErayKo%3D&jwt=***'
+        run: |
+          curl --fail --location --silent --show-error "$APK_URL" -o /tmp/CENA-0.16.0.apk
+          printf '%s  %s\n' 'e08ca5b39d333b82e4cf43cf6e5f491d287a7e5143acdc57be9e9c4ddc7e3ee2' '/tmp/CENA-0.16.0.apk' | sha256sum --check
+      - name: Publicar versão
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create v0.16.0 /tmp/CENA-0.16.0.apk --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'CENA 0.16.0' --notes 'Nova interface, últimos vistos, serviços de streaming e botão de atualização. Instale por cima da versão atual.'
