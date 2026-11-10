@@ -1,0 +1,2 @@
+CENA 0.17.0
+Revisão validada: 0d66883514844707f5e39c3ed9196217b55f32a3
