@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: helbermoura2/teclado-br
-          ref: 'cd67a53fb1d3145dad59b6c47337e85917df0efd'
+          ref: '686dfc86370f774957bb6d8f0dd4b2a7fa462d56'
           token: ${{ secrets.CENA_PRIVATE_ACCESS }}
           persist-credentials: false
           path: source
@@ -118,14 +118,14 @@ jobs:
         working-directory: source/cena
         run: |
           python3 scripts/check-packaged-apk.py android/app/build/outputs/apk/debug/app-debug.apk
-          curl -fL --retry 3 'https://github.com/helbermoura2/cena-downloads/releases/download/v0.21.0/CENA-0.21.0.apk' -o /tmp/CENA-0.21.0.apk
-          echo '210305e4a86e7020c22f6db2dcf58d001bceff0c141c50d8ba1459b43e9faed8  /tmp/CENA-0.21.0.apk' | sha256sum -c -
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs /tmp/CENA-0.21.0.apk > /tmp/cena-old-cert.txt
+          curl -fL --retry 3 'https://github.com/helbermoura2/cena-downloads/releases/download/v0.22.0/CENA-0.22.0.apk' -o /tmp/CENA-0.22.0.apk
+          echo '21326a18b11095bbc9b0c5a60c26c311ad2df976778c47e1fcf825ecfcf806b7  /tmp/CENA-0.22.0.apk' | sha256sum -c -
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs /tmp/CENA-0.22.0.apk > /tmp/cena-old-cert.txt
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs android/app/build/outputs/apk/debug/app-debug.apk > /tmp/cena-new-cert.txt
           python3 -c "from pathlib import Path; import re; get=lambda p:re.search(r'Signer #1 certificate SHA-256 digest: ([0-9a-f]+)',Path(p).read_text()).group(1); assert get('/tmp/cena-old-cert.txt')==get('/tmp/cena-new-cert.txt'), 'Assinatura divergente'"
       - name: Publicar atualização no canal público
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp source/cena/android/app/build/outputs/apk/debug/app-debug.apk /tmp/CENA-0.22.0.apk
-          gh release create v0.22.0 /tmp/CENA-0.22.0.apk --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'CENA 0.22.0' --notes-file source/cena/docs/CENA-0.22.0.md --latest
+          cp source/cena/android/app/build/outputs/apk/debug/app-debug.apk /tmp/CENA-0.23.0.apk
+          gh release create v0.23.0 /tmp/CENA-0.23.0.apk --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'CENA 0.23.0' --notes-file source/cena/docs/CENA-0.23.0.md --latest
