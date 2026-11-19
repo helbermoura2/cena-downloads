@@ -62,14 +62,20 @@ public class FloatingService extends Service {
 
     @Override public int onStartCommand(Intent intent,int flags,int startId) {
         String action=intent==null?null:intent.getAction();
-        if(ACTION_STOP.equals(action)){stopSelf();return START_NOT_STICKY;}
+        if(ACTION_STOP.equals(action)){Prefs.put(this,"enabled",false);stopSelf();return START_NOT_STICKY;}
         if(!Settings.canDrawOverlays(this)){
             Prefs.put(this,"enabled",false);stopSelf();return START_NOT_STICKY;
         }
         try{
             startForeground(NOTIFICATION_ID, notification());
             if(frame==null) addOverlay();
-            else if(ACTION_REFRESH.equals(action)) render();
+            else if(ACTION_REFRESH.equals(action)) {
+                if(expanded) {
+                    params.x=Math.max(0,Math.min(params.x,screenWidth()-Math.min(s(288),screenWidth()-dp(18))));
+                    params.y=Math.max(dp(24),Math.min(params.y,screenHeight()-s(410)));
+                }
+                render();
+            }
             return START_STICKY;
         }catch(Exception e){
             Prefs.put(this,"enabled",false);
@@ -263,7 +269,9 @@ public class FloatingService extends Service {
             @Override public void onProgressChanged(SeekBar bar,int val,boolean fromUser){
                 if(fromUser){
                     changeVolume(stream,val);
-                    percentage.setText((int)Math.round(100.0*val/max)+"%");
+                    int actual=Math.max(0,audio.getStreamVolume(stream));
+                    percentage.setText((int)Math.round(100.0*actual/max)+"%");
+                    if(actual!=val)bar.setProgress(actual);
                 }
             }
             @Override public void onStartTrackingTouch(SeekBar bar){handler.removeCallbacks(autoCollapse);}
@@ -331,8 +339,21 @@ public class FloatingService extends Service {
             try{wm.removeView(frame);}catch(Exception ignored){}
             frame=null;
         }
-        Prefs.put(this,"enabled",false);
+        // Preserve a escolha do usuário ao encerrar por iniciativa do sistema.
+        // Parar explicitamente e desligar no app já desativam a preferência.
         super.onDestroy();
+    }
+    @Override public void onConfigurationChanged(android.content.res.Configuration config) {
+        super.onConfigurationChanged(config);
+        if(frame==null)return;
+        int width=expanded?Math.min(s(288),screenWidth()-dp(18)):s(60);
+        int height=expanded?s(410):s(90);
+        params.x=Math.max(0,Math.min(params.x,screenWidth()-width));
+        params.y=Math.max(dp(24),Math.min(params.y,Math.max(dp(24),screenHeight()-height)));
+        collapsedX=Math.max(0,Math.min(collapsedX,screenWidth()-s(60)));
+        collapsedY=Math.max(dp(24),Math.min(collapsedY,screenHeight()-s(90)));
+        wm.updateViewLayout(frame,params);
+        render();
     }
     @Override public IBinder onBind(Intent i) {return null;}
 }
