@@ -301,7 +301,7 @@ public class FloatingService extends Service {
         int style=Prefs.integer(this,"style",1);
         int background=style==0?0xFF101723:style==1?0xF0223041:style==3?0xFF211934:
             style==5?0xE4334D65:style==6?0xFF283340:style==7?0xFF141A1B:
-            style==8?0xFF261637:style==9?0xFFE7EEF6:style==10?0xFF0A1711:
+            style==8?0xFF261637:style==9?0xFF263547:style==10?0xFF0A1711:
             style==11?0xFF49334D:0xFF090F1B;
         GradientDrawable panelBg=Ui.rounded(background,s(25),
             style>=5?ThemeStyles.highlight(style,a()):style>=2?a():0xFF3D5367,dp(style>=2?2:1));
