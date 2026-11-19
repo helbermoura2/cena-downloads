@@ -1,6 +1,6 @@
 {
-  "versionCode": 2,
-  "versionName": "0.2.0",
+  "versionCode": 3,
+  "versionName": "0.3.0",
   "apkUrl": "",
-  "notes": "Controle rápido + e − flutuante com percentual e painel completo. Código publicado; APK ainda não compilado ou disponibilizado."
+  "notes": "Código-fonte: tamanho independente (+/−), distância ajustável, Minimal/Glass/Neon/Aurora/RGB ∞, RGB contínuo com velocidade configurável. Nenhum APK publicado."
 }
