@@ -1,6 +1,6 @@
 {
-  "versionCode": 1,
-  "versionName": "0.1.0",
+  "versionCode": 2,
+  "versionName": "0.2.0",
   "apkUrl": "",
-  "notes": "Primeiro projeto nativo. APK ainda não publicado; o botão de atualização consulta este arquivo."
+  "notes": "Controle rápido + e − flutuante com percentual e painel completo. Código publicado; APK ainda não compilado ou disponibilizado."
 }
