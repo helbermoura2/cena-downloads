@@ -1,0 +1,40 @@
+name: NIVO - verificar código do atualizador
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/nivo-verify-updater.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compile-updater:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Preparar Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Preparar Android
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
+      - name: Instalar API 35
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Compilar aplicativo com atualizador, sem publicar APK
+        run: gradle --no-daemon -p volume-assistido :app:assembleDebug
+      - name: Confirmar APK gerado
+        run: |
+          set -euo pipefail
+          APK=volume-assistido/app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          unzip -l "$APK" | grep -q 'classes.dex'
+          unzip -l "$APK" | grep -q 'AndroidManifest.xml'
