@@ -42,3 +42,10 @@ O aplicativo não lê conteúdo da tela e não solicita permissões de acessibil
 - **Pendente:** compilação real com Android SDK, instalação e teste físico em Galaxy S25 Ultra/Android 15 ou superior. Este ambiente não tem Android SDK nem conectividade para baixá-lo.
 - **Pendente:** geração e assinatura do APK. Não há APK publicado ainda.
 - Futuros incrementos possíveis: perfis por aplicativo, ícones vetoriais mais elaborados, feedback háptico e revisão de acessibilidade.
+
+## Controle rápido (+ / −) — conceito 0.2
+- Os botões **+ e − aparecem diretamente na tela** e ajustam imediatamente o tipo de áudio selecionado (mídia por padrão).
+- O percentual entre os botões mostra a leitura retornada pelo sistema.
+- Toque no percentual para abrir controles completos; arraste o percentual para mudar a posição da coluna.
+- Não é preciso abrir o painel para aumentar ou diminuir o som.
+- Prévia interativa para celular: [preview.html](preview.html). Esta prévia é HTML, não um APK e não altera o volume real.
