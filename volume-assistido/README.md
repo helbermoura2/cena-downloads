@@ -60,3 +60,15 @@ O aplicativo não lê conteúdo da tela e não solicita permissões de acessibil
 - **Observação**: os ajustes são persistidos localmente; não exigem login nem serviço externo.
 - O Android pode ajustar dimensões efetivas conforme densidade/escala da tela. Monitoramento de consumo de energia e acessibilidade ainda carecem de teste em aparelho real.
 - **APK não compilado nem publicado**, pois não há ambiente Android SDK validado nesta sessão. Nenhum GitHub Actions foi solicitado.
+
+## Temas adicionais — versão 0.4.0 (19/11/2026)
+
+O NIVO agora oferece **12 designs nativos**:
+- Originais: Minimal, Glass, Neon, Aurora, RGB ∞.
+- Novos: **Liquid Glass**, **Titanium**, **Carbon**, **Synthwave**, **Pearl**, **Pixel** e **Candy**.
+
+Os novos temas alteram não só a cor mas **forma, gradientes, contornos, superfícies e contraste dos dois botões + / −**, mantendo o percentual central, o arraste e a abertura do painel.
+
+**Tecnologia:** desenhos feitos com APIs nativas Android (GradientDrawable), sem WebView ou bibliotecas externas. Liquid Glass é uma aparência de vidro translúcido, não um desfoque real da tela de outros aplicativos. RGB contínuo permanece restrito ao tema RGB ∞ para economizar recursos.
+
+**Assinatura:** o APK v0.3.0 de teste foi assinado com a chave debug temporária do runner anterior. O APK v0.4.0 de teste, se compilado em outro runner, terá outra chave; nesse caso o Android não permite atualizar por cima. É necessário desinstalar a versão de teste anterior antes de instalar a nova, perdendo as configurações locais. Para atualização direta e preservação das preferências nas próximas versões, configurar uma assinatura persistente protegida (GitHub Secrets) antes de distribuir a versão estável.
