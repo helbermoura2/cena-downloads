@@ -1,0 +1,14 @@
+{
+  "name": "NIVO Android sem GitHub Actions",
+  "image": "mcr.microsoft.com/devcontainers/java:1-17-bookworm",
+  "containerEnv": {
+    "ANDROID_HOME": "/home/vscode/android-sdk",
+    "ANDROID_SDK_ROOT": "/home/vscode/android-sdk"
+  },
+  "postCreateCommand": "bash .devcontainer/setup-android.sh",
+  "postStartCommand": "echo 'NIVO: execute bash volume-assistido/build-codespaces.sh para gerar APK.'",
+  "hostRequirements": {
+    "cpus": 2,
+    "memory": "4gb"
+  }
+}
