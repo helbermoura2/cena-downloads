@@ -1,2 +1,3 @@
-CENA 0.23.0
-686dfc86370f774957bb6d8f0dd4b2a7fa462d56
+CENA 0.27.4
+c3688ca5458ce0e38319141ad4b7490f9bde8b30
+Story cinematográfico · nota, resenha, TMDB / JustWatch
