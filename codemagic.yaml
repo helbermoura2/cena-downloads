@@ -1,0 +1,75 @@
+# NIVO Volume — compilação independente do GitHub Actions.
+# Disparo exclusivamente manual no Codemagic, via repositório público.
+workflows:
+  nivo-android-debug:
+    name: NIVO 0.5.0 - APK de teste no Codemagic
+    instance_type: mac_mini_m2
+    max_build_duration: 45
+    environment:
+      java: 17
+    triggering:
+      events: []
+    scripts:
+      - name: Preparar Gradle e SDK
+        script: |
+          set -eu
+          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+          curl -fsSL https://services.gradle.org/distributions/gradle-8.9-bin.zip -o "$HOME/gradle-8.9.zip"
+          unzip -q "$HOME/gradle-8.9.zip" -d "$HOME"
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > volume-assistido/local.properties
+      - name: Compilar e conferir APK Android
+        script: |
+          set -eu
+          "$HOME/gradle-8.9/bin/gradle" --no-daemon -p volume-assistido :app:assembleDebug
+          APK=volume-assistido/app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          unzip -l "$APK" | grep -q classes.dex
+          unzip -l "$APK" | grep -q AndroidManifest.xml
+          mkdir -p volume-assistido/output
+          cp "$APK" volume-assistido/output/NIVO-Volume-0.5.0-teste.apk
+          (cd volume-assistido/output && shasum -a 256 NIVO-Volume-0.5.0-teste.apk > SHA256SUMS.txt)
+    artifacts:
+      - volume-assistido/output/NIVO-Volume-0.5.0-teste.apk
+      - volume-assistido/output/SHA256SUMS.txt
+
+  nivo-android-estavel:
+    name: NIVO 0.5.0 - APK com assinatura permanente
+    instance_type: mac_mini_m2
+    max_build_duration: 45
+    environment:
+      java: 17
+      groups:
+        - nivo_signing
+    triggering:
+      events: []
+    scripts:
+      - name: Preparar ferramentas
+        script: |
+          set -eu
+          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+          curl -fsSL https://services.gradle.org/distributions/gradle-8.9-bin.zip -o "$HOME/gradle-8.9.zip"
+          unzip -q "$HOME/gradle-8.9.zip" -d "$HOME"
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > volume-assistido/local.properties
+      - name: Compilar APK release assinado
+        script: |
+          set -eu
+          test -n "$NIVO_KEYSTORE_B64"
+          test -n "$NIVO_STORE_PASS"
+          test -n "$NIVO_KEY_ALIAS"
+          test -n "$NIVO_KEY_PASS"
+          "$HOME/gradle-8.9/bin/gradle" --no-daemon -p volume-assistido :app:assembleRelease
+          mkdir -p volume-assistido/output "$HOME/nivo-private"
+          printf '%s' "$NIVO_KEYSTORE_B64" | base64 --decode > "$HOME/nivo-private/signing.jks"
+          chmod 600 "$HOME/nivo-private/signing.jks"
+          TOOLS="$ANDROID_SDK_ROOT/build-tools/35.0.0"
+          INPUT=volume-assistido/app/build/outputs/apk/release/app-release-unsigned.apk
+          ALIGNED=volume-assistido/output/unsigned-aligned.apk
+          APK=volume-assistido/output/NIVO-Volume-0.5.0.apk
+          "$TOOLS/zipalign" -p -f 4 "$INPUT" "$ALIGNED"
+          "$TOOLS/apksigner" sign --ks "$HOME/nivo-private/signing.jks" --ks-key-alias "$NIVO_KEY_ALIAS" --ks-pass env:NIVO_STORE_PASS --key-pass env:NIVO_KEY_PASS --out "$APK" "$ALIGNED"
+          "$TOOLS/apksigner" verify --verbose "$APK"
+          rm -f "$ALIGNED" "$HOME/nivo-private/signing.jks"
+          (cd volume-assistido/output && shasum -a 256 NIVO-Volume-0.5.0.apk > SHA256SUMS.txt)
+    artifacts:
+      - volume-assistido/output/NIVO-Volume-0.5.0.apk
+      - volume-assistido/output/SHA256SUMS.txt
