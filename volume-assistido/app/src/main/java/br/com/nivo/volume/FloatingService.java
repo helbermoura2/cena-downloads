@@ -50,7 +50,7 @@ public class FloatingService extends Service {
     private TextView rgbMinus;
     private final Runnable rgbTicker = new Runnable(){
         @Override public void run(){
-            if(frame==null || expanded || Prefs.integer(FloatingService.this,"style",1)!=4
+            if(frame==null || Prefs.integer(FloatingService.this,"style",1)!=4
                 || !Prefs.flag(FloatingService.this,"rgb_animate",true))return;
             PowerManager power=(PowerManager)getSystemService(POWER_SERVICE);
             if(power==null || power.isInteractive()){
@@ -86,7 +86,7 @@ public class FloatingService extends Service {
     }
     private void restartRGB(){
         handler.removeCallbacks(rgbTicker);
-        if(frame!=null&&!expanded&&Prefs.integer(this,"style",1)==4&&Prefs.flag(this,"rgb_animate",true)){
+        if(frame!=null&&Prefs.integer(this,"style",1)==4&&Prefs.flag(this,"rgb_animate",true)){
             handler.post(rgbTicker);
         }
     }
@@ -305,7 +305,9 @@ public class FloatingService extends Service {
         box.setPadding(s(17),s(15),s(17),s(18));
         int style=Prefs.integer(this,"style",1);
         int background=style==0?0xFF101723:style==1?0xF0223041:style==3?0xFF211934:0xFF090F1B;
-        box.setBackground(Ui.rounded(background,s(25),style==2?a():0xFF3D5367,dp(style==2?2:1)));
+        GradientDrawable panelBg=Ui.rounded(background,s(25),style>=2?a():0xFF3D5367,dp(style>=2?2:1));
+        box.setBackground(panelBg);
+        if(style==4)rgbDockBackground=panelBg;
         frame.addView(box,new FrameLayout.LayoutParams(panelW,-2));
         LinearLayout heading=Ui.row(this);
         TextView label=Ui.text(this,"◖   N I V O",15,a(),true);
@@ -378,6 +380,7 @@ public class FloatingService extends Service {
         minus.setOnClickListener(v->step(stream,-1,seek,percentage,max));
         plus.setOnClickListener(v->step(stream,1,seek,percentage,max));
         box.addView(buttons);
+        if(style==4){rgbPlus=plus;rgbMinus=minus;}
         box.addView(Ui.gap(this,15));
         TextView foot=Ui.text(this,"ARRASTE O LOGO PARA MOVER",10,Prefs.MUTED,true);
         foot.setGravity(Gravity.CENTER);foot.setLetterSpacing(.1f);
