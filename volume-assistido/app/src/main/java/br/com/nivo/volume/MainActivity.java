@@ -27,6 +27,7 @@ import java.net.URL;
 
 public class MainActivity extends Activity {
     private ScrollView scroll;
+    private UpdateManager updateManager;
     private boolean hasShownPermissionHint;
     private final int[] cards = {0xFF111824, 0xFF141E2D};
     private int a() { return Prefs.accent(this); }
@@ -36,10 +37,12 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         getWindow().setStatusBarColor(Prefs.BG);
         getWindow().setNavigationBarColor(Prefs.BG);
+        updateManager=new UpdateManager(this);
         rebuild(0);
     }
     @Override protected void onResume() {
         super.onResume();
+        if (updateManager != null) updateManager.onResume();
         if (scroll != null && hasShownPermissionHint) rebuild(scroll.getScrollY());
         hasShownPermissionHint = true;
     }
@@ -217,10 +220,10 @@ public class MainActivity extends Activity {
         LinearLayout footer=card(17);
         LinearLayout update=Ui.row(this);
         LinearLayout updateL=Ui.column(this);
-        updateL.addView(Ui.text(this,"Verificar atualização",15,Prefs.TEXT,true));
-        updateL.addView(Ui.text(this,"Versões publicadas no seu GitHub",12,Prefs.MUTED,false));
+        updateL.addView(Ui.text(this,"Atualizar aplicativo",15,Prefs.TEXT,true));
+        updateL.addView(Ui.text(this,"Verificar, baixar e instalar pelo NIVO",12,Prefs.MUTED,false));
         update.addView(updateL,new LinearLayout.LayoutParams(0,-2,1));
-        update.addView(Ui.text(this,"↗",23,a(),true));
+        update.addView(Ui.text(this,"↓",23,a(),true));
         update.setOnClickListener(v->checkUpdate());footer.addView(update);
         footer.addView(Ui.gap(this,12));
         footer.addView(Ui.text(this,"NIVO Volume • Feito para Android • Sem anúncios",11,Prefs.MUTED,false));
@@ -290,49 +293,7 @@ public class MainActivity extends Activity {
         try{startActivity(i);}catch(Exception e){startActivity(new Intent(Settings.ACTION_SETTINGS));}
     }
 
-    private long installedVersionCode(){
-        try {
-            android.content.pm.PackageInfo info=getPackageManager().getPackageInfo(getPackageName(),0);
-            if(Build.VERSION.SDK_INT>=28)return info.getLongVersionCode();
-            return info.versionCode;
-        }catch(Exception ignored){return 1;}
-    }
-
     private void checkUpdate(){
-        new Thread(()->{
-            HttpURLConnection conn=null;
-            try {
-                URL url=new URL("https://raw.githubusercontent.com/helbermoura2/cena-downloads/main/volume-assistido/update.json");
-                conn=(HttpURLConnection)url.openConnection();
-                conn.setConnectTimeout(8500);conn.setReadTimeout(8500);
-                conn.setRequestProperty("User-Agent","NIVO-Volume/0.1");
-                if(conn.getResponseCode()!=200) throw new Exception("HTTP "+conn.getResponseCode());
-                StringBuilder b=new StringBuilder();
-                try(BufferedReader reader=new BufferedReader(new InputStreamReader(conn.getInputStream(),"UTF-8"))){
-                    String line;while((line=reader.readLine())!=null && b.length()<30000)b.append(line);
-                }
-                JSONObject json=new JSONObject(b.toString());
-                int newer=json.optInt("versionCode",1);
-                String version=json.optString("versionName","?");
-                String apk=json.optString("apkUrl","");
-                runOnUiThread(()->{
-                    if(isFinishing() || isDestroyed())return;
-                    if(newer>installedVersionCode() && apk.startsWith("https://github.com/helbermoura2/")){
-                        new AlertDialog.Builder(this).setTitle("Nova versão "+version)
-                            .setMessage("Abrir a página de download? A instalação exigirá sua confirmação no Android.")
-                            .setNegativeButton("Cancelar",null)
-                            .setPositiveButton("Baixar",(d,w)->startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(apk)))).show();
-                    }else{
-                        new AlertDialog.Builder(this).setTitle("Nenhum APK novo")
-                            .setMessage("Você está com a versão inicial ou ainda não há um APK mais recente publicado no GitHub.")
-                            .setPositiveButton("Entendi",null).show();
-                    }
-                });
-            }catch(Exception e){runOnUiThread(()->new AlertDialog.Builder(this)
-                .setTitle("Não foi possível verificar")
-                .setMessage("Confira sua conexão e tente novamente.\n"+e.getClass().getSimpleName())
-                .setPositiveButton("OK",null).show());
-            }finally{if(conn!=null)conn.disconnect();}
-        }).start();
+        if(updateManager!=null)updateManager.checkForUpdates();
     }
 }
