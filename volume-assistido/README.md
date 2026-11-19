@@ -31,3 +31,14 @@ O aplicativo não lê conteúdo da tela e não solicita permissões de acessibil
 
 ## Estrutura
 \`app/src/main/java/br/com/nivo/volume/\` contém Activity, serviço flutuante e receiver de boot.
+
+## Revisão do projeto (19/11/2026)
+- Código publicado em pasta isolada; `cena-build-public.yml` permanece intocado.
+- Corrigido: após tentativa de volume bloqueada, os valores do painel passam a refletir o volume **real** retornado pelo sistema.
+- Corrigido: parada por notificação desliga a preferência; encerramento inesperado do processo não apaga a opção de início automático.
+- Corrigido: posição do overlay reconsiderada ao alterar orientação ou tamanho.
+- Corrigido: verificador de atualização compara a versão instalada, não um número fixo.
+- Prévia web visualmente validada em viewport móvel (412px) com testes de abrir, fechar e ajustar volume. A prévia **não controla o volume do celular**.
+- **Pendente:** compilação real com Android SDK, instalação e teste físico em Galaxy S25 Ultra/Android 15 ou superior. Este ambiente não tem Android SDK nem conectividade para baixá-lo.
+- **Pendente:** geração e assinatura do APK. Não há APK publicado ainda.
+- Futuros incrementos possíveis: perfis por aplicativo, ícones vetoriais mais elaborados, feedback háptico e revisão de acessibilidade.
