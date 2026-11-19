@@ -1,4 +1,5 @@
 name: NIVO Volume - APK de teste gratuito
+# retry: 1 — Java forward reference corrigida
 on:
   workflow_dispatch:
   push:
