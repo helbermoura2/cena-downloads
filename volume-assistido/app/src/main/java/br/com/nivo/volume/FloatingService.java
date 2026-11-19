@@ -34,12 +34,12 @@ public class FloatingService extends Service {
     private static final String CHANNEL = "nivo_volume";
     private static final int NOTIFICATION_ID = 481;
     private final Handler handler = new Handler(Looper.getMainLooper());
+    private boolean expanded;
     private final Runnable autoCollapse = () -> { if(expanded) { expanded=false; reposition(false); render(); } };
     private WindowManager wm;
     private WindowManager.LayoutParams params;
     private FrameLayout frame;
     private AudioManager audio;
-    private boolean expanded;
     private int selected = 0;
     private int collapsedX, collapsedY;
     private float touchX, touchY;
