@@ -1,6 +1,6 @@
 {
   "versionCode": 3,
   "versionName": "0.3.0",
-  "apkUrl": "",
-  "notes": "Código-fonte: tamanho independente (+/−), distância ajustável, Minimal/Glass/Neon/Aurora/RGB ∞, RGB contínuo com velocidade configurável. Nenhum APK publicado."
+  "apkUrl": "https://github.com/helbermoura2/cena-downloads/releases/download/nivo-volume-v0.3.0-test/NIVO-Volume-0.3.0-teste.apk",
+  "notes": "APK 0.3.0 de teste compilado e publicado. Botões + e − flutuantes, tamanho, distância, cinco temas, RGB contínuo. APK de depuração assinado temporariamente."
 }
