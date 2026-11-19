@@ -1,0 +1,58 @@
+name: NIVO Volume - APK de teste gratuito
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/nivo-build-once.yml'
+permissions:
+  contents: write
+concurrency:
+  group: nivo-build-test-030
+  cancel-in-progress: false
+jobs:
+  build:
+    name: Compilar NIVO sem alterar CENA
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Android SDK API 35
+        run: |
+          set -e
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Compilar APK debug assinado para teste
+        run: gradle --no-daemon -p volume-assistido :app:assembleDebug --stacktrace
+      - name: Verificar estrutura do APK e gerar checksum
+        run: |
+          set -euo pipefail
+          APK=volume-assistido/app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          unzip -l "$APK" | grep -q 'classes.dex'
+          unzip -l "$APK" | grep -q 'AndroidManifest.xml'
+          mkdir -p output
+          cp "$APK" output/NIVO-Volume-0.3.0-teste.apk
+          cd output && sha256sum NIVO-Volume-0.3.0-teste.apk > SHA256SUMS.txt
+      - name: Publicar APK para celular no GitHub Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create "nivo-volume-v0.3.0-test" \
+            output/NIVO-Volume-0.3.0-teste.apk \
+            output/SHA256SUMS.txt \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "NIVO Volume 0.3.0 - APK de teste" \
+            --notes "APK Android de teste com botões + e - flutuantes, tamanho, espaçamento, temas e RGB contínuo. Esta versão usa assinatura DEBUG temporária; futuras versões precisam manter a mesma assinatura para atualizar sem desinstalar. Instalação não testada em celular real." \
+            --latest=false
