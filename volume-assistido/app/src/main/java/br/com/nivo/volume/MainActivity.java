@@ -88,7 +88,7 @@ public class MainActivity extends Activity {
         TextView logo=Ui.text(this,"N I V O",17,Prefs.TEXT,true);logo.setLetterSpacing(.14f);
         names.addView(logo);names.addView(Ui.text(this,"CONTROLE DE VOLUME",10,Prefs.MUTED,true));
         brand.addView(names,new LinearLayout.LayoutParams(0,-2,1));
-        TextView tag=Ui.text(this,"v0.3",11,a(),true);
+        TextView tag=Ui.text(this,"v0.4",11,a(),true);
         tag.setPadding(d(12),d(7),d(12),d(7));tag.setBackground(Ui.rounded(0xFF182D3B,d(40),0,0));
         brand.addView(tag);
         root.addView(brand);
@@ -131,31 +131,47 @@ public class MainActivity extends Activity {
         start.addView(permRow);root.addView(start);
 
         h(root,"Escolha seu estilo");
-        // Duas linhas evitam esmagar a interface em celulares estreitos.
-        String[] labels={"Minimal","Glass","Neon","Aurora","RGB ∞"};
-        String[] marks={"●","◌","✦","◈","🌈"};
-        for(int rowIndex=0;rowIndex<2;rowIndex++){
-        LinearLayout styles=Ui.row(this);
-        for(int colIndex=0;colIndex<3;colIndex++){
-            int n=rowIndex*3+colIndex;
-            if(n>=labels.length) break;
-            final int style=n;
-            boolean selected=Prefs.integer(this,"style",1)==n;
-            LinearLayout item=Ui.column(this);
-            item.setPadding(d(9),d(14),d(9),d(12));item.setGravity(Gravity.CENTER_HORIZONTAL);
-            int bg= selected?0xFF1C2F41:Prefs.SURFACE;
-            item.setBackground(Ui.rounded(bg,d(18),selected?a():Prefs.OUTLINE,d(1)));
-            TextView mark=Ui.text(this,marks[n],29,selected?a():0xFF8FA6BE,true);mark.setGravity(Gravity.CENTER);
-            item.addView(mark,lp(-1,40));
-            item.addView(Ui.gap(this,8));
-            TextView name=Ui.text(this,labels[n],12,selected?Prefs.TEXT:Prefs.MUTED,true);
-            name.setGravity(Gravity.CENTER);item.addView(name);
-            LinearLayout.LayoutParams ip=new LinearLayout.LayoutParams(0,d(100),1);
-            if(colIndex>0)ip.leftMargin=d(9);styles.addView(item,ip);
-            item.setOnClickListener(v->{Prefs.put(this,"style",style);refreshService();rebuild(scroll.getScrollY());});
-        }
-        root.addView(styles);
-        if(rowIndex==0)root.addView(Ui.gap(this,9));
+        // Cada card representa um acabamento real do overlay, não só uma troca de cor.
+        final int cols=3;
+        final int rows=(ThemeStyles.NAMES.length+cols-1)/cols;
+        for(int rowIndex=0;rowIndex<rows;rowIndex++){
+            LinearLayout styles=Ui.row(this);
+            for(int colIndex=0;colIndex<cols;colIndex++){
+                int n=rowIndex*cols+colIndex;
+                if(n>=ThemeStyles.NAMES.length)break;
+                final int style=n;
+                boolean selected=Prefs.integer(this,"style",1)==n;
+                int tint=ThemeStyles.highlight(n,a());
+                LinearLayout item=Ui.column(this);
+                item.setPadding(d(7),d(12),d(7),d(12));
+                item.setGravity(Gravity.CENTER_HORIZONTAL);
+                item.setBackground(Ui.rounded(selected?0xFF1E3244:Prefs.SURFACE,
+                    d(17),selected?tint:Prefs.OUTLINE,d(selected?2:1)));
+                TextView mark=Ui.text(this,ThemeStyles.SYMBOLS[n],26,
+                    n==9?0xFF24354C:tint,true);
+                mark.setGravity(Gravity.CENTER);
+                mark.setBackground(Ui.rounded(ThemeStyles.tileBg(n),d(14),
+                    selected?tint:Prefs.OUTLINE,d(1)));
+                item.addView(mark,lp(49,43));
+                item.addView(Ui.gap(this,7));
+                TextView name=Ui.text(this,ThemeStyles.NAMES[n],11,
+                    selected?Prefs.TEXT:Prefs.MUTED,true);
+                name.setGravity(Gravity.CENTER);
+                name.setSingleLine(false);
+                name.setMaxLines(2);
+                item.addView(name,lp(-1,32));
+                LinearLayout.LayoutParams ip=new LinearLayout.LayoutParams(0,d(115),1);
+                if(colIndex>0)ip.leftMargin=d(8);
+                styles.addView(item,ip);
+                item.setOnClickListener(v->{
+                    int y=scroll.getScrollY();
+                    Prefs.put(this,"style",style);
+                    refreshService();
+                    rebuild(y);
+                });
+            }
+            root.addView(styles);
+            if(rowIndex<rows-1)root.addView(Ui.gap(this,9));
         }
 
         h(root,"Sua paleta");
