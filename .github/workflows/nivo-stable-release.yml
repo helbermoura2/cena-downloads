@@ -1,0 +1,112 @@
+name: NIVO - publicar versao estavel assinada
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: nivo-stable-release
+  cancel-in-progress: false
+jobs:
+  sign-and-release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      NIVO_KEYSTORE_B64: ${{ secrets.NIVO_KEYSTORE_B64 }}
+      NIVO_STORE_PASS: ${{ secrets.NIVO_STORE_PASS }}
+      NIVO_KEY_ALIAS: ${{ secrets.NIVO_KEY_ALIAS }}
+      NIVO_KEY_PASS: ${{ secrets.NIVO_KEY_PASS }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Exigir assinatura persistente privada
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$NIVO_KEYSTORE_B64" || { echo "Falta o secret NIVO_KEYSTORE_B64"; exit 1; }
+          test -n "$NIVO_STORE_PASS" || { echo "Falta o secret NIVO_STORE_PASS"; exit 1; }
+          test -n "$NIVO_KEY_ALIAS" || { echo "Falta o secret NIVO_KEY_ALIAS"; exit 1; }
+          test -n "$NIVO_KEY_PASS" || { echo "Falta o secret NIVO_KEY_PASS"; exit 1; }
+      - name: Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Ferramentas Android
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
+      - name: Android 35
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Compilar APK release
+        shell: bash
+        run: gradle --no-daemon -p volume-assistido :app:assembleRelease
+      - name: Assinar com a MESMA chave em todas as versoes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p output private-signing
+          chmod 700 private-signing
+          printf '%s' "$NIVO_KEYSTORE_B64" | base64 --decode > private-signing/nivo-release.jks
+          chmod 600 private-signing/nivo-release.jks
+          GRADLE=volume-assistido/app/build.gradle
+          VERSION=$(sed -n "s/^[[:space:]]*versionName '\([^']*\)'.*/\1/p" "$GRADLE" | head -1)
+          VERSION_CODE=$(sed -n 's/^[[:space:]]*versionCode \([0-9][0-9]*\).*/\1/p' "$GRADLE" | head -1)
+          test -n "$VERSION" && test -n "$VERSION_CODE"
+          INPUT=volume-assistido/app/build/outputs/apk/release/app-release-unsigned.apk
+          test -s "$INPUT"
+          FILE="NIVO-Volume-${VERSION}.apk"
+          apksigner sign \
+            --ks private-signing/nivo-release.jks \
+            --ks-key-alias "$NIVO_KEY_ALIAS" \
+            --ks-pass env:NIVO_STORE_PASS \
+            --key-pass env:NIVO_KEY_PASS \
+            --out "output/$FILE" "$INPUT"
+          apksigner verify --verbose "output/$FILE"
+          (cd output && sha256sum "$FILE" > SHA256SUMS.txt)
+          echo "NIVO_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NIVO_VERSION_CODE=$VERSION_CODE" >> "$GITHUB_ENV"
+          echo "NIVO_FILE=$FILE" >> "$GITHUB_ENV"
+          rm -rf private-signing
+      - name: Publicar APK assinado em GitHub Releases
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release create "nivo-v${NIVO_VERSION}" \
+            "output/$NIVO_FILE" output/SHA256SUMS.txt \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "NIVO Volume $NIVO_VERSION" \
+            --notes "Versao assinada de forma persistente. Atualizacoes futuras do NIVO devem usar a MESMA chave de assinatura. A primeira transicao de uma versao debug temporaria pode exigir uma unica reinstalacao."
+      - name: Publicar indice update.json com versao e SHA-256
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,os
+          path="volume-assistido/update.json"
+          with open(path,encoding="utf-8") as f:
+              data=json.load(f)
+          version=os.environ["NIVO_VERSION"]
+          filename=os.environ["NIVO_FILE"]
+          data.update({
+              "versionCode":int(os.environ["NIVO_VERSION_CODE"]),
+              "versionName":version,
+              "apkUrl":"https://github.com/"+os.environ["GITHUB_REPOSITORY"]+
+                  "/releases/download/nivo-v"+version+"/"+filename,
+              "sha256":open("output/SHA256SUMS.txt",encoding="utf-8").read().split()[0],
+              "notes":"Nova versao do NIVO Volume disponivel para atualizacao pelo aplicativo."
+          })
+          with open(path,"w",encoding="utf-8") as f:
+              json.dump(data,f,ensure_ascii=False,indent=2)
+              f.write("\n")
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add volume-assistido/update.json
+          git commit -m "release(nivo): atualizar indice de APK assinado $NIVO_VERSION" || exit 0
+          git push origin HEAD:main
