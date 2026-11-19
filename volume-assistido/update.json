@@ -2,5 +2,6 @@
   "versionCode": 4,
   "versionName": "0.4.0",
   "apkUrl": "https://github.com/helbermoura2/cena-downloads/releases/download/nivo-volume-v0.4.0-test/NIVO-Volume-0.4.0-teste.apk",
-  "notes": "12 temas: Minimal, Glass, Neon, Aurora, RGB infinito, Liquid Glass, Titanium, Carbon, Synthwave, Pearl, Pixel e Candy. APK de teste assinado com chave debug diferente: desinstale v0.3 antes de instalar v0.4."
+  "notes": "NIVO 0.4.0 — 12 estilos. A versão 0.4 de teste foi assinada com chave temporária; atualizações em instalação só serão possíveis depois de fixar uma chave permanente.",
+  "sha256": "22a13ba3c7138157d25a0be5412fb9b0808a4439c243bf957413be1c19d28af7"
 }
