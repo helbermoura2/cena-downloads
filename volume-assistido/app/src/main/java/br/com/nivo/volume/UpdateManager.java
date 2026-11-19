@@ -145,7 +145,7 @@ final class UpdateManager {
         progressDialog.show();
         new Thread(()->{
             File folder=new File(activity.getCacheDir(),"nivo-updates");
-            File part=new File(folder,"nivo-update.apk.tmp");
+            File part=new File(folder,"nivo-update-partial.apk");
             File dest=UpdateApkProvider.apkFile(activity);
             HttpURLConnection connection=null;
             try{
