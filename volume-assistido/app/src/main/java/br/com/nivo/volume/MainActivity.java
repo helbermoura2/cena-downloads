@@ -88,7 +88,7 @@ public class MainActivity extends Activity {
         TextView logo=Ui.text(this,"N I V O",17,Prefs.TEXT,true);logo.setLetterSpacing(.14f);
         names.addView(logo);names.addView(Ui.text(this,"CONTROLE DE VOLUME",10,Prefs.MUTED,true));
         brand.addView(names,new LinearLayout.LayoutParams(0,-2,1));
-        TextView tag=Ui.text(this,"v0.1",11,a(),true);
+        TextView tag=Ui.text(this,"v0.2",11,a(),true);
         tag.setPadding(d(12),d(7),d(12),d(7));tag.setBackground(Ui.rounded(0xFF182D3B,d(40),0,0));
         brand.addView(tag);
         root.addView(brand);
