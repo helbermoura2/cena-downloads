@@ -83,21 +83,27 @@ final class Ui {
             p.setTypeface(android.graphics.Typeface.create("sans-serif-medium",0));
             p.setTextSize(dp(context,11));p.setColor(0xFFABB9CF);
             c.drawText("PRÉVIA DO SEU CONTROLE",dp(context,36),dp(context,37),p);
-            float pw=dp(context,104), ph=dp(context,174), x=(w-pw)/2,y=dp(context,62);
+            int btn=Prefs.integer(context,"button_size",52);
+            int gap=Prefs.integer(context,"button_gap",32);
+            float pw=dp(context,Math.max(92,btn+42)),ph=dp(context,Math.max(144,btn*2+gap+20));
+            float x=(w-pw)/2,y=dp(context,60);
+            if(y+ph>h-dp(context,36)) y=Math.max(dp(context,52),h-ph-dp(context,36));
             p.setShadowLayer(dp(context,28),0,dp(context,12),style==2?accent:0xAA000000);
             rect(c,x,y,x+pw,y+ph,dp(context,28),style==0?0xFF131722:style==1?0xE12A3544:0xFF090D19);
             p.clearShadowLayer();
-            if(style==2) {
+            if(style>=2) {
                 p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(dp(context,1.5f));p.setColor(accent);r.set(x,y,x+pw,y+ph);c.drawRoundRect(r,dp(context,28),dp(context,28),p);p.setStyle(Paint.Style.FILL);
             }
             p.setColor(accent);
             c.drawCircle(x+pw*0.5f,y+dp(context,38),dp(context,23),p);
             p.setColor(0xFF08101A);p.setTypeface(android.graphics.Typeface.create("sans-serif-medium",1));p.setTextSize(dp(context,27));
-            c.drawText("+",x+pw*.5f-dp(context,8),y+dp(context,47),p);
-            rect(c,x+dp(context,26),y+dp(context,74),x+pw-dp(context,26),y+dp(context,128),dp(context,18),0x553E6075);
-            rect(c,x+dp(context,43),y+dp(context,78),x+pw-dp(context,43),y+dp(context,112),dp(context,12),accent);
+            float first=y+dp(context,btn*.65f);
+            c.drawText("+",x+pw*.5f-dp(context,8),first,p);
+            float mid=y+dp(context,btn+gap/2f+9);
+            p.setColor(accent);p.setTextSize(dp(context,12));
+            c.drawText("63%",x+pw*.5f-dp(context,13),mid,p);
             p.setColor(0xFFD8F7FF);p.setTextSize(dp(context,25));
-            c.drawText("−",x+pw*.5f-dp(context,9),y+dp(context,157),p);
+            c.drawText("−",x+pw*.5f-dp(context,9),y+dp(context,btn+gap+btn*.65f),p);
             p.setColor(0xFFB5C1D2);p.setTextSize(dp(context,10));p.setTypeface(android.graphics.Typeface.create("sans-serif",0));
             c.drawText("ARRASTE • AJUSTE • RECOLHA",dp(context,30),h-dp(context,20),p);
         }
