@@ -8,23 +8,59 @@ body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 75% 13%,#1c
 main{max-width:490px;margin:auto}header{display:flex;gap:12px;align-items:center;margin:0 0 38px}header .logo{display:grid;place-items:center;width:48px;height:48px;border-radius:16px;border:1px solid #38576b;background:#162d3e;color:var(--c);font-size:26px}header b{letter-spacing:.26em;font-size:18px}header small{display:block;letter-spacing:.2em;color:#90a4b9;font-size:9px;margin-top:5px}header span{margin-left:auto;border-radius:30px;border:1px solid #345165;background:#182e3d;color:var(--c);padding:9px;font-size:11px;white-space:nowrap}
 .eyebrow{color:var(--c);font-size:11px;font-weight:800;letter-spacing:.13em;margin-bottom:16px}h1{font-size:clamp(30px,9vw,48px);line-height:1.08;letter-spacing:-.04em;margin:0 0 18px}p{font-size:14px;color:#a0b0c3;line-height:1.55}.stage{position:relative;min-height:290px;border-radius:26px;border:1px solid #2e465d;background:radial-gradient(circle at center,#1b3c50a6,transparent 61%),linear-gradient(120deg,#182b45,#0c1523);margin:24px 0 29px;overflow:hidden}.stage>.kicker{color:#a5bdd4;font-size:10px;letter-spacing:.13em;font-weight:800;padding:21px}.stage .center{display:flex;justify-content:center;align-items:center;height:220px}.dock{border:1px solid var(--c);border-radius:25px;padding:6px;background:#1b2e3eeb;display:flex;flex-direction:column;gap:4px;align-items:center;box-shadow:0 15px 36px #0009,0 0 27px #65ddfd26;transform:scale(var(--size));opacity:var(--alpha);user-select:none}.dock button{border:0;border-radius:17px;width:53px;height:53px;font-size:30px;font-weight:650;cursor:pointer}.dock button:active{transform:scale(.9)}.dock .up{background:var(--c);color:#05131c}.dock .down{background:#293f55;color:white}.dock .mid{font-size:11px;color:var(--c);height:28px;display:grid;place-items:center;font-weight:800;cursor:grab}
 .card{border:1px solid #29384a;background:#121a27;border-radius:23px;margin:16px 0;padding:19px}h2{font-size:20px;margin:30px 0 13px}.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.row strong{font-size:15px}.muted{font-size:12px;color:#94a9bd;line-height:1.6}label{display:block;font-size:13px;font-weight:600;margin-top:16px}input[type=range]{display:block;width:100%;margin:12px 0;accent-color:var(--c)}.colors{display:flex;gap:13px;margin-top:14px}.colors button{height:37px;width:37px;border:2px solid #f3f8ff00;border-radius:100%;cursor:pointer}.colors button.active{border-color:#fff}#show{background:var(--c);border:0;border-radius:15px;padding:11px 15px;color:#07131a;font-weight:800;cursor:pointer}.overlay{display:none;position:fixed;right:12px;top:38%;z-index:10;touch-action:none}.overlay.visible{display:block}.overlay .dock{backdrop-filter:blur(10px)}.overlay .dock .mid{touch-action:none;cursor:grab}.panel{display:none;min-width:245px;border:1px solid #476075;border-radius:21px;background:#162437;box-shadow:0 14px 36px #0008;padding:20px}.overlay.open .dock{display:none}.overlay.open .panel{display:block}.panel select,.panel input{width:100%;margin:10px 0}.panel button{border:0;border-radius:12px;background:var(--c);color:#041723;padding:10px;font-weight:750}.hint{font-size:11px;color:#92a9bf}.fine{font-size:12px;color:#a1b2c5;margin-top:27px}
+
+:root{--btn:53px;--btn-gap:28px;--rgbDuration:8s}
+.dock{gap:0}.dock button{width:var(--btn);height:var(--btn);font-size:calc(var(--btn)*.55)}
+.dock .mid{width:var(--btn);height:var(--btn-gap)}
+.variants{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.variant{min-width:0;border:1px solid #334657;background:#172437;color:#a9c6d8;border-radius:13px;padding:13px 2px;font-size:12px;cursor:pointer}
+.variant.active{color:var(--c);border-color:var(--c);background:#183548}
+.switchline{display:flex;gap:10px;align-items:center}
+.dock[data-style="minimal"]{background:#111823;border-color:#445467;border-radius:15px;box-shadow:0 10px 25px #0008}
+.dock[data-style="neon"]{background:#090d17;border:2px solid var(--c);box-shadow:0 0 24px var(--c),0 10px 30px #0008}
+.dock[data-style="aurora"]{background:linear-gradient(145deg,#372555,#0f3e44);border:2px solid #ab85ff;box-shadow:0 0 28px #ab85ff6e}
+.dock[data-style="rgb"]{background:linear-gradient(#111421,#111421) padding-box,linear-gradient(115deg,#ff2460,#ffa62d,#3bfaaf,#4ca0ff,#ba68ff,#ff2460) border-box;border:3px solid transparent;box-shadow:0 0 26px #9765ff77}
+.rgb-active .dock[data-style="rgb"]{animation:nivoRainbow var(--rgbDuration) linear infinite}
+@keyframes nivoRainbow{from{filter:hue-rotate(0deg)}to{filter:hue-rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.rgb-active .dock[data-style="rgb"]{animation-duration:24s}}
 </style></head><body><main>
-<header><div class="logo">◖</div><div><b>NIVO</b><small>CONTROLE DE VOLUME</small></div><span>CONCEITO 0.2</span></header>
+<header><div class="logo">◖</div><div><b>NIVO</b><small>CONTROLE DE VOLUME</small></div><span>CONCEITO 0.3</span></header>
 <div class="eyebrow">MENOS BOTÕES. MAIS CONTROLE.</div>
 <h1>O volume na<br/>ponta do dedo.</h1>
-<p><b>+ e −</b> sempre visíveis. Controle o som com um toque. Arraste pelo percentual para mudar a posição e toque para abrir os controles completos.</p>
-<section class="stage"><div class="kicker">PRÉVIA INTERATIVA • VOLUME SIMULADO</div><div class="center"><div class="dock"><button class="up" data-action="plus">+</button><div class="mid" data-value>63%</div><button class="down" data-action="minus">−</button></div></div></section>
+<p><b>+ e −</b> sempre visíveis. Defina tamanho, distância, estilo e RGB animado. Arraste pelo percentual para mover o controle ou toque para abrir o painel completo.</p>
+<section class="stage"><div class="kicker">PRÉVIA INTERATIVA • VOLUME SIMULADO</div><div class="center"><div class="dock" data-style="glass"><button class="up" data-action="plus">+</button><div class="mid" data-value>63%</div><button class="down" data-action="minus">−</button></div></div></section>
 <div class="card"><div class="row"><div><strong>Botões flutuantes</strong><div class="muted">Aparecerão por cima desta página</div></div><button id="show">Ativar</button></div></div>
 <h2>Personalização</h2><div class="card"><strong>Cor de destaque</strong><div class="colors"><button class="active" style="background:#65ddfd" data-color="#65ddfd"></button><button style="background:#528dff" data-color="#528dff"></button><button style="background:#b39aff" data-color="#b39aff"></button><button style="background:#ffad73" data-color="#ffad73"></button><button style="background:#75e7b6" data-color="#75e7b6"></button></div>
-<label>Tamanho <span id="sz">100%</span><input type="range" id="size" min="70" max="140" value="100"></label><label>Opacidade <span id="op">94%</span><input type="range" id="alpha" min="50" max="100" value="94"></label></div>
+<label>Tamanho dos botões <span id="btnsz">52 dp</span><input type="range" id="btnsize" min="38" max="92" value="52"></label>
+<label>Distância entre + e − <span id="gaplabel">32 dp</span><input type="range" id="gap" min="28" max="116" value="32"></label>
+<label>Escala geral <span id="sz">100%</span><input type="range" id="size" min="70" max="150" value="100"></label><label>Opacidade <span id="op">94%</span><input type="range" id="alpha" min="50" max="100" value="94"></label></div>
+<h2>Estilos e animações</h2><div class="card"><div class="variants" id="variants">
+<button class="variant" data-style="minimal">Minimal</button>
+<button class="variant active" data-style="glass">Glass</button>
+<button class="variant" data-style="neon">Neon</button>
+<button class="variant" data-style="aurora">Aurora</button>
+<button class="variant" data-style="rgb">🌈 RGB ∞</button></div>
+<label class="switchline"><input type="checkbox" id="rgbOn" checked> Animação RGB contínua</label>
+<label>Velocidade <span id="speedlabel">8 s / ciclo</span><input type="range" id="speed" min="3" max="20" value="8"></label>
+<div class="muted">O RGB permanece ativo no estilo RGB ∞ enquanto a prévia está visível. Você pode desligá-lo a qualquer momento.</div>
+</div>
 <p class="fine">Demonstração visual. O volume do celular não é modificado por esta página. No APK Android, os botões usam o controle de áudio do sistema. APK ainda não publicado.</p>
 </main>
-<div class="overlay" id="overlay"><div class="dock"><button class="up" data-action="plus" aria-label="Aumentar volume">+</button><div class="mid" data-value id="handle" title="Arrastar para mover • tocar para painel">63%</div><button class="down" data-action="minus" aria-label="Diminuir volume">−</button></div>
+<div class="overlay" id="overlay"><div class="dock" data-style="glass"><button class="up" data-action="plus" aria-label="Aumentar volume">+</button><div class="mid" data-value id="handle" title="Arrastar para mover • tocar para painel">63%</div><button class="down" data-action="minus" aria-label="Diminuir volume">−</button></div>
 <div class="panel"><div class="row"><strong style="color:var(--c)">N I V O</strong><button id="close">×</button></div><label>Categoria <select id="stream"><option>Mídia</option><option>Toque</option><option>Notificações</option><option>Alarme</option></select></label><label>Volume <span data-value>63%</span><input type="range" id="volume" min="0" max="100" value="63"></label><div class="row"><button data-action="minus">−</button><button data-action="plus">+</button></div></div></div>
 <script>
 (()=>{let vol=63;const q=s=>document.querySelector(s),all=s=>document.querySelectorAll(s);function volume(n){vol=Math.max(0,Math.min(100,n));all('[data-value]').forEach(e=>e.textContent=vol+'%');q('#volume').value=vol}
 all('[data-action=plus]').forEach(e=>e.onclick=()=>volume(vol+5));all('[data-action=minus]').forEach(e=>e.onclick=()=>volume(vol-5));q('#volume').oninput=e=>volume(+e.target.value);
 all('[data-color]').forEach(b=>b.onclick=()=>{document.documentElement.style.setProperty('--c',b.dataset.color);all('[data-color]').forEach(x=>x.classList.remove('active'));b.classList.add('active')});
+q('#btnsize').oninput=e=>{document.documentElement.style.setProperty('--btn',e.target.value+'px');q('#btnsz').textContent=e.target.value+' dp'};
+q('#gap').oninput=e=>{document.documentElement.style.setProperty('--btn-gap',e.target.value+'px');q('#gaplabel').textContent=e.target.value+' dp'};
+q('#speed').oninput=e=>{document.documentElement.style.setProperty('--rgbDuration',e.target.value+'s');q('#speedlabel').textContent=e.target.value+' s / ciclo'};
+q('#rgbOn').onchange=e=>document.body.classList.toggle('rgb-active',e.target.checked);
+document.body.classList.add('rgb-active');
+all('#variants [data-style]').forEach(b=>b.onclick=()=>{
+all('#variants [data-style]').forEach(x=>x.classList.remove('active'));b.classList.add('active');
+all('.dock[data-style]').forEach(x=>x.dataset.style=b.dataset.style);
+});
 q('#size').oninput=e=>{document.documentElement.style.setProperty('--size',e.target.value/100);q('#sz').textContent=e.target.value+'%'};
 q('#alpha').oninput=e=>{document.documentElement.style.setProperty('--alpha',e.target.value/100);q('#op').textContent=e.target.value+'%'};
 q('#show').onclick=()=>{let f=q('#overlay');f.classList.toggle('visible');f.classList.remove('open');q('#show').textContent=f.classList.contains('visible')?'Desativar':'Ativar'};
