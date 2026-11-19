@@ -1,5 +1,5 @@
 name: NIVO Volume - APK de teste gratuito
-# retry: 1 — Java forward reference corrigida
+# build: 0.4 — 12 temas nativos, sem modificar o CENA
 on:
   workflow_dispatch:
   push:
@@ -9,7 +9,7 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: nivo-build-test-030
+  group: nivo-build-test-040
   cancel-in-progress: false
 jobs:
   build:
@@ -47,18 +47,18 @@ jobs:
           unzip -l "$APK" | grep -q 'classes.dex'
           unzip -l "$APK" | grep -q 'AndroidManifest.xml'
           mkdir -p output
-          cp "$APK" output/NIVO-Volume-0.3.0-teste.apk
-          cd output && sha256sum NIVO-Volume-0.3.0-teste.apk > SHA256SUMS.txt
+          cp "$APK" output/NIVO-Volume-0.4.0-teste.apk
+          cd output && sha256sum NIVO-Volume-0.4.0-teste.apk > SHA256SUMS.txt
       - name: Publicar APK para celular no GitHub Releases
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          gh release create "nivo-volume-v0.3.0-test" \
-            output/NIVO-Volume-0.3.0-teste.apk \
+          gh release create "nivo-volume-v0.4.0-test" \
+            output/NIVO-Volume-0.4.0-teste.apk \
             output/SHA256SUMS.txt \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
-            --title "NIVO Volume 0.3.0 - APK de teste" \
-            --notes "APK Android de teste com botões + e - flutuantes, tamanho, espaçamento, temas e RGB contínuo. Esta versão usa assinatura DEBUG temporária; futuras versões precisam manter a mesma assinatura para atualizar sem desinstalar. Instalação não testada em celular real." \
+            --title "NIVO Volume 0.4.0 - APK de teste" \
+            --notes "APK Android de teste com botões + e - flutuantes, tamanho, espaçamento e 12 temas visuais nativos. Esta versão usa assinatura DEBUG diferente da versão 0.3.0; desinstale a versão anterior primeiro. Testes físicos ainda necessários." \
             --latest=false
