@@ -102,3 +102,33 @@ Para começar a atualizar sem reinstalar:
 A antiga compilação debug agora publica apenas um artefato de teste temporário, nunca um APK no Release público. `.github/workflows/nivo-verify-updater.yml` compila e valida o código sem publicar um novo APK.
 
 O NIVO não pede acesso ao armazenamento externo e não instala aplicativos sem confirmação explícita do Android. Não use `REQUEST_INSTALL_PACKAGES` para arquivos de origem diferente da URL de Releases indicada no projeto.
+
+
+## Alternativas gratuitas, sem GitHub Actions e sem computador (novembro de 2026)
+
+### 1. GitHub Codespaces — opção de nuvem recomendada
+
+Para contas pessoais GitHub Free, GitHub oferece franquia mensal de Codespaces (120 horas de núcleo, equivalentes a 60h em máquina de 2 núcleos, mais 15 GB-mês de armazenamento; uso extra pode exigir forma de pagamento). O repositório contém:
+- [Configuração Codespaces](../.devcontainer/devcontainer.json)
+- [Instalação automática do Android SDK e Gradle](../.devcontainer/setup-android.sh)
+- [Script de compilação](build-codespaces.sh)
+
+Procedimento pelo navegador do celular:
+1. Abra a página deste repositório no GitHub e entre em **Code > Codespaces > Create codespace on main**, escolhendo 2 núcleos se disponível.
+2. O devcontainer prepara automaticamente JDK 17, Android SDK 35, Build Tools 35 e Gradle 8.9. A primeira preparação baixa ferramentas e pode demorar; acompanhe no terminal.
+3. Abra o terminal da interface web e execute: 
+   \`bash volume-assistido/build-codespaces.sh\`
+4. Com a compilação aprovada, no Explorador do VS Code web, localize \`volume-assistido/output/NIVO-Volume-0.5.0-teste.apk\` e use **Download**.
+5. **Pare ou exclua** o Codespace ao terminar para evitar consumir a franquia gratuita.
+
+**Nenhum GitHub Actions é disparado**. Este é um build em computador Linux temporário no Codespaces controlado pelo titular da conta.
+
+**Assinatura:** o APK de teste tem uma chave debug da máquina; uma atualização sobre NIVO 0.4 de outra máquina não é permitida pelo Android. Para preservação de dados nas próximas versões, uma **keystore estável e privada** deve ser criada e guardada fora do repositório; use a opção de build release assinado com essa keystore. Não salve chaves e senhas no GitHub público.
+
+### 2. Code on the Go — tudo no Android
+
+O aplicativo gratuito e open-source **Code on the Go**, da App Dev for All, pode compilar aplicativos Kotlin/Java diretamente no celular sem PC. Site oficial: https://appdevforall.org/code-on-the-go/. A versão 26.47 foi publicada em 17/11/2026; a página informa suporte a Android Gradle Plugin de 7.3.0 a 9.3.1, portanto a versão AGP 8.7.3 deste projeto está dentro da faixa anunciada, mas o build NIVO ainda deve ser testado.
+
+Abra/importa o subprojeto \`volume-assistido\` (não a raiz \`cena-downloads\`) no CoGo. Após compilar, use **Export** para salvar o APK, pois a versão 26.45+ armazena os resultados no espaço privado do aplicativo.
+
+Estas opções são gratuitas dentro das respectivas condições; nenhuma substitui uma compilação efetiva que produza e verifique um APK antes de distribuí-lo.
