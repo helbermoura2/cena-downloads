@@ -257,6 +257,14 @@ public class MainActivity extends Activity {
         try{startActivity(i);}catch(Exception e){startActivity(new Intent(Settings.ACTION_SETTINGS));}
     }
 
+    private long installedVersionCode(){
+        try {
+            android.content.pm.PackageInfo info=getPackageManager().getPackageInfo(getPackageName(),0);
+            if(Build.VERSION.SDK_INT>=28)return info.getLongVersionCode();
+            return info.versionCode;
+        }catch(Exception ignored){return 1;}
+    }
+
     private void checkUpdate(){
         new Thread(()->{
             HttpURLConnection conn=null;
@@ -275,7 +283,8 @@ public class MainActivity extends Activity {
                 String version=json.optString("versionName","?");
                 String apk=json.optString("apkUrl","");
                 runOnUiThread(()->{
-                    if(newer>1 && apk.startsWith("https://github.com/helbermoura2/")){
+                    if(isFinishing() || isDestroyed())return;
+                    if(newer>installedVersionCode() && apk.startsWith("https://github.com/helbermoura2/")){
                         new AlertDialog.Builder(this).setTitle("Nova versão "+version)
                             .setMessage("Abrir a página de download? A instalação exigirá sua confirmação no Android.")
                             .setNegativeButton("Cancelar",null)
