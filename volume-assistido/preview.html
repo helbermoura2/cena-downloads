@@ -15,19 +15,55 @@ main{max-width:490px;margin:auto}header{display:flex;gap:12px;align-items:center
 .variants{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
 .variant{min-width:0;border:1px solid #334657;background:#172437;color:#a9c6d8;border-radius:13px;padding:13px 2px;font-size:12px;cursor:pointer}
 .variant.active{color:var(--c);border-color:var(--c);background:#183548}
+.variant[data-style="liquid"]{background:linear-gradient(125deg,#4e779b,#1d2938)}
+.variant[data-style="titanium"]{background:linear-gradient(120deg,#6b7884,#141e27)}
+.variant[data-style="carbon"]{background:linear-gradient(120deg,#1e2827,#080d0d);color:#aefa87}
+.variant[data-style="synthwave"]{background:linear-gradient(130deg,#662b68,#211332);color:#ffa3df}
+.variant[data-style="pearl"]{background:linear-gradient(135deg,#f6faff,#cddbe8);color:#3b506b}
+.variant[data-style="pixel"]{background:#102316;border-radius:4px;color:#aafa81}
+.variant[data-style="candy"]{background:linear-gradient(135deg,#674463,#472b45);color:#ffbad6}
+.variant.active{outline:1px solid currentColor;outline-offset:2px}
 .switchline{display:flex;gap:10px;align-items:center}
 .dock[data-style="minimal"]{background:#111823;border-color:#445467;border-radius:15px;box-shadow:0 10px 25px #0008}
 .dock[data-style="neon"]{background:#090d17;border:2px solid var(--c);box-shadow:0 0 24px var(--c),0 10px 30px #0008}
+.dock[data-style="liquid"]{background:linear-gradient(150deg,#a0c9dfa9,#384e6bbf,#162639e3);border:1px solid #e5faff;box-shadow:0 14px 28px #040912a6;border-radius:29px}
+.dock[data-style="liquid"] .up{background:linear-gradient(160deg,#f8ffffb8,#a0e1fa90);border:1px solid #f3ffff;color:#18334a;border-radius:50%}
+.dock[data-style="liquid"] .down{background:linear-gradient(145deg,#9abbd38c,#2a425c8c);border:1px solid #c5e9fd;border-radius:50%}
+.dock[data-style="liquid"] .mid{color:#e7faff}
+.dock[data-style="titanium"]{background:linear-gradient(145deg,#64707e,#323d4b,#151c25);border:1px solid #b4c9db;border-radius:18px}
+.dock[data-style="titanium"] .up{background:linear-gradient(140deg,#f2f8ff,#899db0,#4b6075);color:#152334;border:1px solid #f0f7ff;border-radius:13px}
+.dock[data-style="titanium"] .down{background:linear-gradient(#637487,#242f3b);border:1px solid #6b829c;border-radius:13px}
+.dock[data-style="titanium"] .mid{color:#dce6ed}
+.dock[data-style="carbon"]{background:#12191a;border:1px solid #526760;border-radius:9px}
+.dock[data-style="carbon"] .up{background:#26312d;border:1px solid #b8fa77;color:#b8fa77;border-radius:5px;font-family:monospace}
+.dock[data-style="carbon"] .down{background:#111919;border:1px solid #405f46;color:#b8fa77;border-radius:5px;font-family:monospace}
+.dock[data-style="carbon"] .mid{color:#b8fa77;font-family:monospace}
+.dock[data-style="synthwave"]{background:linear-gradient(160deg,#52235f,#17132a,#2b164b);border:2px solid #ff6acb;box-shadow:0 0 30px #f548ba60;border-radius:27px}
+.dock[data-style="synthwave"] .up{background:linear-gradient(135deg,#ff63c7,#9e6cff);color:#240f37;border-radius:50%}
+.dock[data-style="synthwave"] .down{background:#311a46;border:1px solid #ad7cff;color:#ffa8e9;border-radius:50%}
+.dock[data-style="synthwave"] .mid{color:#ff8adf}
+.dock[data-style="pearl"]{background:linear-gradient(150deg,#f6faff,#d3dfeb);border:1px solid white;border-radius:30px}
+.dock[data-style="pearl"] .up{background:linear-gradient(#f0deff,#aebfff);color:#243950;border:1px solid #fff;border-radius:50%}
+.dock[data-style="pearl"] .down{background:linear-gradient(#f9fbff,#cddbeb);color:#354962;border:1px solid white;border-radius:50%}
+.dock[data-style="pearl"] .mid{color:#425775}
+.dock[data-style="pixel"]{background:#0a1711;border:2px solid #88f479;border-radius:0}
+.dock[data-style="pixel"] .up{background:#9aff74;color:#091b12;border-radius:0;font-family:monospace}
+.dock[data-style="pixel"] .down{background:#173021;border:1px solid #9aff74;color:#9aff74;border-radius:0;font-family:monospace}
+.dock[data-style="pixel"] .mid{color:#9aff74;font-family:monospace}
+.dock[data-style="candy"]{background:linear-gradient(145deg,#604164,#30253e);border:1px solid #ffc0da;border-radius:30px}
+.dock[data-style="candy"] .up{background:linear-gradient(160deg,#ffe4d3,#ff91b9,#d96acb);border:1px solid #fff0f3;color:#492548;border-radius:50%}
+.dock[data-style="candy"] .down{background:linear-gradient(#755574,#43314c);border:1px solid #dba2cd;color:#ffeafa;border-radius:50%}
+.dock[data-style="candy"] .mid{color:#ffc0dc}
 .dock[data-style="aurora"]{background:linear-gradient(145deg,#372555,#0f3e44);border:2px solid #ab85ff;box-shadow:0 0 28px #ab85ff6e}
 .dock[data-style="rgb"]{background:linear-gradient(#111421,#111421) padding-box,linear-gradient(115deg,#ff2460,#ffa62d,#3bfaaf,#4ca0ff,#ba68ff,#ff2460) border-box;border:3px solid transparent;box-shadow:0 0 26px #9765ff77}
 .rgb-active .dock[data-style="rgb"]{animation:nivoRainbow var(--rgbDuration) linear infinite}
 @keyframes nivoRainbow{from{filter:hue-rotate(0deg)}to{filter:hue-rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.rgb-active .dock[data-style="rgb"]{animation-duration:24s}}
 </style></head><body><main>
-<header><div class="logo">◖</div><div><b>NIVO</b><small>CONTROLE DE VOLUME</small></div><span>CONCEITO 0.3</span></header>
+<header><div class="logo">◖</div><div><b>NIVO</b><small>CONTROLE DE VOLUME</small></div><span>CONCEITO 0.4</span></header>
 <div class="eyebrow">MENOS BOTÕES. MAIS CONTROLE.</div>
 <h1>O volume na<br/>ponta do dedo.</h1>
-<p><b>+ e −</b> sempre visíveis. Defina tamanho, distância, estilo e RGB animado. Arraste pelo percentual para mover o controle ou toque para abrir o painel completo.</p>
+<p><b>+ e −</b> sempre visíveis. Agora com 12 designs, além de tamanho, distância e RGB animado. Arraste pelo percentual para mover o controle ou toque para abrir o painel completo.</p>
 <section class="stage"><div class="kicker">PRÉVIA INTERATIVA • VOLUME SIMULADO</div><div class="center"><div class="dock" data-style="glass"><button class="up" data-action="plus">+</button><div class="mid" data-value>63%</div><button class="down" data-action="minus">−</button></div></div></section>
 <div class="card"><div class="row"><div><strong>Botões flutuantes</strong><div class="muted">Aparecerão por cima desta página</div></div><button id="show">Ativar</button></div></div>
 <h2>Personalização</h2><div class="card"><strong>Cor de destaque</strong><div class="colors"><button class="active" style="background:#65ddfd" data-color="#65ddfd"></button><button style="background:#528dff" data-color="#528dff"></button><button style="background:#b39aff" data-color="#b39aff"></button><button style="background:#ffad73" data-color="#ffad73"></button><button style="background:#75e7b6" data-color="#75e7b6"></button></div>
@@ -39,10 +75,17 @@ main{max-width:490px;margin:auto}header{display:flex;gap:12px;align-items:center
 <button class="variant active" data-style="glass">Glass</button>
 <button class="variant" data-style="neon">Neon</button>
 <button class="variant" data-style="aurora">Aurora</button>
-<button class="variant" data-style="rgb">🌈 RGB ∞</button></div>
+<button class="variant" data-style="rgb">🌈 RGB ∞</button>
+<button class="variant" data-style="liquid">◉ Liquid Glass</button>
+<button class="variant" data-style="titanium">⬡ Titanium</button>
+<button class="variant" data-style="carbon">▨ Carbon</button>
+<button class="variant" data-style="synthwave">☾ Synthwave</button>
+<button class="variant" data-style="pearl">◍ Pearl</button>
+<button class="variant" data-style="pixel">▣ Pixel</button>
+<button class="variant" data-style="candy">♥ Candy</button></div>
 <label class="switchline"><input type="checkbox" id="rgbOn" checked> Animação RGB contínua</label>
 <label>Velocidade <span id="speedlabel">8 s / ciclo</span><input type="range" id="speed" min="3" max="20" value="8"></label>
-<div class="muted">O RGB permanece ativo no estilo RGB ∞ enquanto a prévia está visível. Você pode desligá-lo a qualquer momento.</div>
+<div class="muted">Os 12 temas alteram bordas, formas, gradientes e contraste. O RGB fica animado no estilo RGB ∞ enquanto a prévia está visível. Você pode desligá-lo a qualquer momento.</div>
 </div>
 <p class="fine">Demonstração visual. O volume do celular não é modificado por esta página. No APK Android, os botões usam o controle de áudio do sistema. APK ainda não publicado.</p>
 </main>
