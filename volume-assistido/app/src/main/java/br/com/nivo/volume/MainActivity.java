@@ -88,7 +88,7 @@ public class MainActivity extends Activity {
         TextView logo=Ui.text(this,"N I V O",17,Prefs.TEXT,true);logo.setLetterSpacing(.14f);
         names.addView(logo);names.addView(Ui.text(this,"CONTROLE DE VOLUME",10,Prefs.MUTED,true));
         brand.addView(names,new LinearLayout.LayoutParams(0,-2,1));
-        TextView tag=Ui.text(this,"v0.2",11,a(),true);
+        TextView tag=Ui.text(this,"v0.3",11,a(),true);
         tag.setPadding(d(12),d(7),d(12),d(7));tag.setBackground(Ui.rounded(0xFF182D3B,d(40),0,0));
         brand.addView(tag);
         root.addView(brand);
@@ -131,10 +131,14 @@ public class MainActivity extends Activity {
         start.addView(permRow);root.addView(start);
 
         h(root,"Escolha seu estilo");
+        // Duas linhas evitam esmagar a interface em celulares estreitos.
+        String[] labels={"Minimal","Glass","Neon","Aurora","RGB ∞"};
+        String[] marks={"●","◌","✦","◈","🌈"};
+        for(int rowIndex=0;rowIndex<2;rowIndex++){
         LinearLayout styles=Ui.row(this);
-        String[] labels={"Minimal","Glass","Neon"};
-        String[] marks={"●","◌","✦"};
-        for(int n=0;n<3;n++){
+        for(int colIndex=0;colIndex<3;colIndex++){
+            int n=rowIndex*3+colIndex;
+            if(n>=labels.length) break;
             final int style=n;
             boolean selected=Prefs.integer(this,"style",1)==n;
             LinearLayout item=Ui.column(this);
@@ -147,10 +151,12 @@ public class MainActivity extends Activity {
             TextView name=Ui.text(this,labels[n],12,selected?Prefs.TEXT:Prefs.MUTED,true);
             name.setGravity(Gravity.CENTER);item.addView(name);
             LinearLayout.LayoutParams ip=new LinearLayout.LayoutParams(0,d(100),1);
-            if(n>0)ip.leftMargin=d(9);styles.addView(item,ip);
+            if(colIndex>0)ip.leftMargin=d(9);styles.addView(item,ip);
             item.setOnClickListener(v->{Prefs.put(this,"style",style);refreshService();rebuild(scroll.getScrollY());});
         }
         root.addView(styles);
+        if(rowIndex==0)root.addView(Ui.gap(this,9));
+        }
 
         h(root,"Sua paleta");
         LinearLayout palette=card(17);
@@ -169,9 +175,20 @@ public class MainActivity extends Activity {
 
         h(root,"Ajuste os detalhes");
         LinearLayout settings=card(17);
-        addSlider(settings,"Tamanho do controle","size",70,150,100,"%",v->refreshService());
+        addSlider(settings,"Tamanho dos botões + / −","button_size",38,92,52," dp",v->refreshService());
+        settings.addView(Ui.gap(this,12));
+        addSlider(settings,"Distância entre os botões","button_gap",28,116,32," dp",v->refreshService());
+        settings.addView(Ui.gap(this,12));
+        addSlider(settings,"Escala geral do controle","size",70,150,100,"%",v->refreshService());
         settings.addView(Ui.gap(this,12));
         addSlider(settings,"Opacidade","opacity",40,100,92,"%",v->refreshService());
+        settings.addView(Ui.gap(this,15));
+        sectionLabel(settings,"RGB infinito","No estilo RGB ∞, o contorno e os botões mudam de cor continuamente.");
+        settings.addView(Ui.gap(this,12));
+        addSwitch(settings,"Animação RGB contínua","Permanece animando com a tela ligada e o controle visível","rgb_animate",true);
+        settings.addView(Ui.gap(this,12));
+        addSlider(settings,"Velocidade do RGB","rgb_speed",3,20,8," s / ciclo",v->refreshService());
+        settings.addView(Ui.gap(this,12));
         settings.addView(Ui.gap(this,10));
         addSwitch(settings,"Recolher automaticamente","O controle fica discreto quando não usado","auto",true);
         settings.addView(Ui.gap(this,12));
