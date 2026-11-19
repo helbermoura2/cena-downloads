@@ -8,6 +8,9 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.PixelFormat;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
+import android.os.PowerManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -42,6 +45,25 @@ public class FloatingService extends Service {
     private float touchX, touchY;
     private int initialX, initialY;
     private boolean moved;
+    private android.graphics.drawable.GradientDrawable rgbDockBackground;
+    private TextView rgbPlus;
+    private TextView rgbMinus;
+    private final Runnable rgbTicker = new Runnable(){
+        @Override public void run(){
+            if(frame==null || expanded || Prefs.integer(FloatingService.this,"style",1)!=4
+                || !Prefs.flag(FloatingService.this,"rgb_animate",true))return;
+            PowerManager power=(PowerManager)getSystemService(POWER_SERVICE);
+            if(power==null || power.isInteractive()){
+                int seconds=Math.max(3,Prefs.integer(FloatingService.this,"rgb_speed",8));
+                float hue=((android.os.SystemClock.uptimeMillis()%(seconds*1000L))*360f)/(seconds*1000f);
+                int color=Color.HSVToColor(new float[]{hue,.90f,1f});
+                if(rgbDockBackground!=null)rgbDockBackground.setStroke(dp(2),color);
+                if(rgbPlus!=null)rgbPlus.setBackgroundTintList(ColorStateList.valueOf(color));
+                if(rgbMinus!=null)rgbMinus.setTextColor(color);
+            }
+            handler.postDelayed(this,(power!=null&&!power.isInteractive())?1200:100);
+        }
+    };
     private final int[] STREAMS = {AudioManager.STREAM_MUSIC,AudioManager.STREAM_RING,
             AudioManager.STREAM_NOTIFICATION,AudioManager.STREAM_ALARM};
     private final String[] NAMES = {"MÍDIA","TOQUE","NOTIFIC.","ALARME"};
@@ -51,6 +73,23 @@ public class FloatingService extends Service {
     private float scale(){return Prefs.integer(this,"size",100)/100f;}
     private int s(float value){return dp(value*scale());}
     private int a(){return Prefs.accent(this);}
+    private int buttonDp(){return Math.max(38,Math.min(92,Prefs.integer(this,"button_size",52)));}
+    private int gapDp(){return Math.max(28,Math.min(116,Prefs.integer(this,"button_gap",32)));}
+    private int dockWidth(){return s(buttonDp()+10);}
+    private int dockHeight(){return s(buttonDp()*2+gapDp()+10);}
+    private void clampDock(){
+        if(params==null)return;
+        int width=expanded?Math.min(s(288),screenWidth()-dp(18)):dockWidth();
+        int height=expanded?s(410):dockHeight();
+        params.x=Math.max(0,Math.min(params.x,Math.max(0,screenWidth()-width)));
+        params.y=Math.max(dp(24),Math.min(params.y,Math.max(dp(24),screenHeight()-height-dp(28))));
+    }
+    private void restartRGB(){
+        handler.removeCallbacks(rgbTicker);
+        if(frame!=null&&!expanded&&Prefs.integer(this,"style",1)==4&&Prefs.flag(this,"rgb_animate",true)){
+            handler.post(rgbTicker);
+        }
+    }
 
     @Override public void onCreate() {
         super.onCreate();
@@ -74,6 +113,7 @@ public class FloatingService extends Service {
                     params.x=Math.max(0,Math.min(params.x,screenWidth()-Math.min(s(288),screenWidth()-dp(18))));
                     params.y=Math.max(dp(24),Math.min(params.y,screenHeight()-s(410)));
                 }
+                clampDock();
                 render();
             }
             return START_STICKY;
@@ -126,8 +166,9 @@ public class FloatingService extends Service {
             WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
             PixelFormat.TRANSLUCENT);
         params.gravity=Gravity.TOP|Gravity.LEFT;
-        params.x=Math.max(0,Math.min(screenWidth()-dp(64),collapsedX));
-        params.y=Math.max(dp(40),Math.min(screenHeight()-dp(180),collapsedY));
+        params.x=collapsedX;
+        params.y=collapsedY;
+        clampDock();
         params.alpha=Prefs.integer(this,"opacity",92)/100f;
         frame=new FrameLayout(this);
         wm.addView(frame,params);
@@ -141,14 +182,17 @@ public class FloatingService extends Service {
             params.x=Math.min(params.x,Math.max(0,screenWidth()-s(296)-dp(10)));
             params.y=Math.min(params.y,Math.max(dp(24),screenHeight()-s(410)));
         }else{
-            params.x=Math.max(0,Math.min(screenWidth()-dp(64),collapsedX));
+            params.x=collapsedX;
             params.y=collapsedY;
+            clampDock();
         }
         wm.updateViewLayout(frame,params);
     }
     private void render(){
         if(frame==null)return;
         handler.removeCallbacks(autoCollapse);
+        handler.removeCallbacks(rgbTicker);
+        rgbDockBackground=null;rgbPlus=null;rgbMinus=null;
         params.alpha=Prefs.integer(this,"opacity",92)/100f;
         frame.removeAllViews();
         if(expanded) showExpanded();
@@ -157,34 +201,42 @@ public class FloatingService extends Service {
         frame.setAlpha(0.86f);frame.setScaleX(0.96f);frame.setScaleY(0.96f);
         frame.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(180L).start();
         scheduleCollapse();
+        restartRGB();
     }
     private void showCollapsed(){
-        // Dois controles sempre disponíveis: não é necessário abrir o painel.
+        // Os dois botões ficam sempre acessíveis, com tamanho e espaçamento próprios.
+        int style=Prefs.integer(this,"style",1);
+        int size=s(buttonDp());
         LinearLayout dock=Ui.column(this);
         dock.setGravity(Gravity.CENTER);
         dock.setPadding(s(5),s(5),s(5),s(5));
-        int style=Prefs.integer(this,"style",1);
-        int bg=style==0?0xFF101724:style==1?0xED1B2C3E:0xFF090E1A;
-        dock.setBackground(Ui.rounded(bg,s(23),style==2?a():0xFF41617C,dp(style==2?2:1)));
+        int bg=(style==0)?0xFF111824:(style==1)?0xEE263447:
+                (style==2)?0xFF090D19:(style==3)?0xFF211934:0xFF11111D;
+        int stroke=(style==0)?Prefs.OUTLINE:(style==1)?0xFF54718D:(style==3)?0xFFB39AFF:a();
+        rgbDockBackground=Ui.rounded(bg,s(style==0?13:23),stroke,dp(style>=2?2:1));
+        dock.setBackground(rgbDockBackground);
+        if(style==3)dock.setElevation(dp(9));
 
-        TextView plus=Ui.text(this,"+",31,0xFF07131D,true);
+        TextView plus=Ui.text(this,"+",Math.max(20,(int)(buttonDp()*.60f)),0xFF07131D,true);
         plus.setGravity(Gravity.CENTER);
-        plus.setBackground(Ui.rounded(a(),s(18),0,0));
+        plus.setBackground(Ui.rounded(style==3?0xFFBD99FF:a(),s(style==0?11:18),0,0));
         plus.setContentDescription("Aumentar volume de "+NAMES[selected]);
-        dock.addView(plus,new LinearLayout.LayoutParams(s(52),s(51)));
+        dock.addView(plus,new LinearLayout.LayoutParams(size,size));
 
-        TextView percentage=Ui.text(this,"",12,a(),true);
+        TextView percentage=Ui.text(this,"",12,style==3?0xFFC7B5FF:a(),true);
         percentage.setGravity(Gravity.CENTER);
-        percentage.setContentDescription("Arraste para mover o controle, toque para abrir o painel completo");
-        dock.addView(percentage,new LinearLayout.LayoutParams(s(52),s(32)));
+        percentage.setContentDescription("Arraste para mover o controle; toque para abrir o painel completo");
+        dock.addView(percentage,new LinearLayout.LayoutParams(size,s(gapDp())));
 
-        TextView minus=Ui.text(this,"−",31,Prefs.TEXT,true);
+        TextView minus=Ui.text(this,"−",Math.max(20,(int)(buttonDp()*.60f)),style==3?0xFFBBA5FA:Prefs.TEXT,true);
         minus.setGravity(Gravity.CENTER);
-        minus.setBackground(Ui.rounded(0xFF273A50,s(18),0,0));
+        int minusBg=(style==0)?0xFF222D3C:(style==3)?0xFF34284C:0xFF273A50;
+        minus.setBackground(Ui.rounded(minusBg,s(style==0?11:18),0,0));
         minus.setContentDescription("Diminuir volume de "+NAMES[selected]);
-        dock.addView(minus,new LinearLayout.LayoutParams(s(52),s(51)));
+        dock.addView(minus,new LinearLayout.LayoutParams(size,size));
 
         frame.addView(dock);
+        if(style==4){rgbPlus=plus;rgbMinus=minus;}
         updateQuickPercentage(percentage);
         plus.setOnClickListener(v->{
             v.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP);
@@ -194,7 +246,6 @@ public class FloatingService extends Service {
             v.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP);
             quickStep(-1,percentage);
         });
-        // O rótulo central é o puxador: toque abre o painel; arraste move o dock.
         percentage.setOnTouchListener(this::dragOrOpen);
     }
     private void updateQuickPercentage(TextView label){
@@ -222,8 +273,9 @@ public class FloatingService extends Service {
                 float dx=event.getRawX()-touchX,dy=event.getRawY()-touchY;
                 if(Math.abs(dx)>dp(9)||Math.abs(dy)>dp(9))moved=true;
                 if(moved) {
-                    params.x=Math.max(0,Math.min(screenWidth()-dp(58),initialX+(int)dx));
-                    params.y=Math.max(dp(24),Math.min(screenHeight()-dp(140),initialY+(int)dy));
+                    params.x=initialX+(int)dx;
+                    params.y=initialY+(int)dy;
+                    clampDock();
                     wm.updateViewLayout(frame,params);
                 }
                 return true;
@@ -252,7 +304,7 @@ public class FloatingService extends Service {
         LinearLayout box=Ui.column(this);
         box.setPadding(s(17),s(15),s(17),s(18));
         int style=Prefs.integer(this,"style",1);
-        int background=style==0?0xFF101723:style==1?0xF0223041:0xFF090F1B;
+        int background=style==0?0xFF101723:style==1?0xF0223041:style==3?0xFF211934:0xFF090F1B;
         box.setBackground(Ui.rounded(background,s(25),style==2?a():0xFF3D5367,dp(style==2?2:1)));
         frame.addView(box,new FrameLayout.LayoutParams(panelW,-2));
         LinearLayout heading=Ui.row(this);
@@ -371,6 +423,7 @@ public class FloatingService extends Service {
     }
     @Override public void onDestroy() {
         handler.removeCallbacks(autoCollapse);
+        handler.removeCallbacks(rgbTicker);
         if(frame!=null) {
             try{wm.removeView(frame);}catch(Exception ignored){}
             frame=null;
@@ -382,12 +435,9 @@ public class FloatingService extends Service {
     @Override public void onConfigurationChanged(android.content.res.Configuration config) {
         super.onConfigurationChanged(config);
         if(frame==null)return;
-        int width=expanded?Math.min(s(288),screenWidth()-dp(18)):s(60);
-        int height=expanded?s(410):s(90);
-        params.x=Math.max(0,Math.min(params.x,screenWidth()-width));
-        params.y=Math.max(dp(24),Math.min(params.y,Math.max(dp(24),screenHeight()-height)));
-        collapsedX=Math.max(0,Math.min(collapsedX,screenWidth()-s(60)));
-        collapsedY=Math.max(dp(24),Math.min(collapsedY,screenHeight()-s(90)));
+        clampDock();
+        collapsedX=Math.max(0,Math.min(collapsedX,Math.max(0,screenWidth()-dockWidth())));
+        collapsedY=Math.max(dp(24),Math.min(collapsedY,Math.max(dp(24),screenHeight()-dockHeight()-dp(28))));
         wm.updateViewLayout(frame,params);
         render();
     }
