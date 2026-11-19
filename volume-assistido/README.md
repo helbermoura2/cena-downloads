@@ -49,3 +49,14 @@ O aplicativo não lê conteúdo da tela e não solicita permissões de acessibil
 - Toque no percentual para abrir controles completos; arraste o percentual para mudar a posição da coluna.
 - Não é preciso abrir o painel para aumentar ou diminuir o som.
 - Prévia interativa para celular: [preview.html](preview.html). Esta prévia é HTML, não um APK e não altera o volume real.
+
+## Personalização avançada — código-fonte 0.3.0 (19/11/2026)
+
+- **Tamanho dos botões + / −**: 38–92 dp, independente da escala geral (70–150%).
+- **Distância entre os botões**: 28–116 dp, incluindo a área do percentual central.
+- **Cinco estilos**: Minimal, Glass, Neon, Aurora e RGB ∞, com cores/acabamentos próprios.
+- **Animação RGB contínua**: contorno colorido e botões atualizados a cada 100 ms, com ciclo ajustável entre 3 e 20 s; desliga com a tela apagada e pode ser desativada nas configurações.
+- **Prévia HTML**: [preview.html](preview.html), que demonstra os novos ajustes sem controlar o áudio real.
+- **Observação**: os ajustes são persistidos localmente; não exigem login nem serviço externo.
+- O Android pode ajustar dimensões efetivas conforme densidade/escala da tela. Monitoramento de consumo de energia e acessibilidade ainda carecem de teste em aparelho real.
+- **APK não compilado nem publicado**, pois não há ambiente Android SDK validado nesta sessão. Nenhum GitHub Actions foi solicitado.
