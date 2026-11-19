@@ -159,22 +159,58 @@ public class FloatingService extends Service {
         scheduleCollapse();
     }
     private void showCollapsed(){
-        LinearLayout tab=Ui.column(this);
-        tab.setGravity(Gravity.CENTER);
+        // Dois controles sempre disponíveis: não é necessário abrir o painel.
+        LinearLayout dock=Ui.column(this);
+        dock.setGravity(Gravity.CENTER);
+        dock.setPadding(s(5),s(5),s(5),s(5));
         int style=Prefs.integer(this,"style",1);
         int bg=style==0?0xFF101724:style==1?0xED1B2C3E:0xFF090E1A;
-        tab.setBackground(Ui.rounded(bg,s(20),style==2?a():0xFF41617C,dp(style==2?2:1)));
-        TextView icon=Ui.text(this,"◖",26,a(),true);
-        // O ícone é dimensionado junto com o botão.
-        icon.setTextSize(26*scale());
-        icon.setGravity(Gravity.CENTER);
-        tab.addView(icon,new LinearLayout.LayoutParams(s(60),s(61)));
-        TextView bar=Ui.text(this,"•••",11,a(),true);
-        bar.setGravity(Gravity.CENTER);tab.addView(bar,new LinearLayout.LayoutParams(s(60),s(16)));
-        frame.addView(tab);
-        tab.setOnTouchListener(this::dragOrOpen);
+        dock.setBackground(Ui.rounded(bg,s(23),style==2?a():0xFF41617C,dp(style==2?2:1)));
+
+        TextView plus=Ui.text(this,"+",31,0xFF07131D,true);
+        plus.setGravity(Gravity.CENTER);
+        plus.setBackground(Ui.rounded(a(),s(18),0,0));
+        plus.setContentDescription("Aumentar volume de "+NAMES[selected]);
+        dock.addView(plus,new LinearLayout.LayoutParams(s(52),s(51)));
+
+        TextView percentage=Ui.text(this,"",12,a(),true);
+        percentage.setGravity(Gravity.CENTER);
+        percentage.setContentDescription("Arraste para mover o controle, toque para abrir o painel completo");
+        dock.addView(percentage,new LinearLayout.LayoutParams(s(52),s(32)));
+
+        TextView minus=Ui.text(this,"−",31,Prefs.TEXT,true);
+        minus.setGravity(Gravity.CENTER);
+        minus.setBackground(Ui.rounded(0xFF273A50,s(18),0,0));
+        minus.setContentDescription("Diminuir volume de "+NAMES[selected]);
+        dock.addView(minus,new LinearLayout.LayoutParams(s(52),s(51)));
+
+        frame.addView(dock);
+        updateQuickPercentage(percentage);
+        plus.setOnClickListener(v->{
+            v.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP);
+            quickStep(1,percentage);
+        });
+        minus.setOnClickListener(v->{
+            v.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP);
+            quickStep(-1,percentage);
+        });
+        // O rótulo central é o puxador: toque abre o painel; arraste move o dock.
+        percentage.setOnTouchListener(this::dragOrOpen);
     }
-    private boolean dragOrOpen(View view, MotionEvent event) {
+    private void updateQuickPercentage(TextView label){
+        int stream=STREAMS[selected];
+        int max=Math.max(1,audio.getStreamMaxVolume(stream));
+        int actual=Math.max(0,audio.getStreamVolume(stream));
+        label.setText((int)Math.round(100.0*actual/max)+"%");
+    }
+    private void quickStep(int delta,TextView label){
+        int stream=STREAMS[selected];
+        int next=Math.max(0,Math.min(audio.getStreamMaxVolume(stream),
+                audio.getStreamVolume(stream)+delta));
+        changeVolume(stream,next);
+        updateQuickPercentage(label);
+    }
+        private boolean dragOrOpen(View view, MotionEvent event) {
         switch(event.getActionMasked()){
             case MotionEvent.ACTION_DOWN:
                 touchX=event.getRawX();touchY=event.getRawY();
