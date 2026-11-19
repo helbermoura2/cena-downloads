@@ -204,39 +204,34 @@ public class FloatingService extends Service {
         restartRGB();
     }
     private void showCollapsed(){
-        // Os dois botões ficam sempre acessíveis, com tamanho e espaçamento próprios.
+        // Preserva +, -, arraste, porcentagem e a posição salvas em todos os temas.
         int style=Prefs.integer(this,"style",1);
         int size=s(buttonDp());
         LinearLayout dock=Ui.column(this);
         dock.setGravity(Gravity.CENTER);
         dock.setPadding(s(5),s(5),s(5),s(5));
-        int bg=(style==0)?0xFF111824:(style==1)?0xEE263447:
-                (style==2)?0xFF090D19:(style==3)?0xFF211934:0xFF11111D;
-        int stroke=(style==0)?Prefs.OUTLINE:(style==1)?0xFF54718D:(style==3)?0xFFB39AFF:a();
-        rgbDockBackground=Ui.rounded(bg,s(style==0?13:23),stroke,dp(style>=2?2:1));
-        dock.setBackground(rgbDockBackground);
-        if(style==3)dock.setElevation(dp(9));
 
         TextView plus=Ui.text(this,"+",Math.max(20,(int)(buttonDp()*.60f)),0xFF07131D,true);
         plus.setGravity(Gravity.CENTER);
-        plus.setBackground(Ui.rounded(style==3?0xFFBD99FF:a(),s(style==0?11:18),0,0));
         plus.setContentDescription("Aumentar volume de "+NAMES[selected]);
         dock.addView(plus,new LinearLayout.LayoutParams(size,size));
 
-        TextView percentage=Ui.text(this,"",12,style==3?0xFFC7B5FF:a(),true);
+        TextView percentage=Ui.text(this,"",12,a(),true);
         percentage.setGravity(Gravity.CENTER);
         percentage.setContentDescription("Arraste para mover o controle; toque para abrir o painel completo");
         dock.addView(percentage,new LinearLayout.LayoutParams(size,s(gapDp())));
 
-        TextView minus=Ui.text(this,"−",Math.max(20,(int)(buttonDp()*.60f)),style==3?0xFFBBA5FA:Prefs.TEXT,true);
+        TextView minus=Ui.text(this,"−",Math.max(20,(int)(buttonDp()*.60f)),Prefs.TEXT,true);
         minus.setGravity(Gravity.CENTER);
-        int minusBg=(style==0)?0xFF222D3C:(style==3)?0xFF34284C:0xFF273A50;
-        minus.setBackground(Ui.rounded(minusBg,s(style==0?11:18),0,0));
         minus.setContentDescription("Diminuir volume de "+NAMES[selected]);
         dock.addView(minus,new LinearLayout.LayoutParams(size,size));
 
+        ThemeStyles.applyDock(this,style,a(),scale(),dock,plus,minus,percentage);
         frame.addView(dock);
-        if(style==4){rgbPlus=plus;rgbMinus=minus;}
+        if(style==4){
+            rgbDockBackground=(GradientDrawable)dock.getBackground();
+            rgbPlus=plus;rgbMinus=minus;
+        }
         updateQuickPercentage(percentage);
         plus.setOnClickListener(v->{
             v.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP);
@@ -304,8 +299,12 @@ public class FloatingService extends Service {
         LinearLayout box=Ui.column(this);
         box.setPadding(s(17),s(15),s(17),s(18));
         int style=Prefs.integer(this,"style",1);
-        int background=style==0?0xFF101723:style==1?0xF0223041:style==3?0xFF211934:0xFF090F1B;
-        GradientDrawable panelBg=Ui.rounded(background,s(25),style>=2?a():0xFF3D5367,dp(style>=2?2:1));
+        int background=style==0?0xFF101723:style==1?0xF0223041:style==3?0xFF211934:
+            style==5?0xE4334D65:style==6?0xFF283340:style==7?0xFF141A1B:
+            style==8?0xFF261637:style==9?0xFFE7EEF6:style==10?0xFF0A1711:
+            style==11?0xFF49334D:0xFF090F1B;
+        GradientDrawable panelBg=Ui.rounded(background,s(25),
+            style>=5?ThemeStyles.highlight(style,a()):style>=2?a():0xFF3D5367,dp(style>=2?2:1));
         box.setBackground(panelBg);
         if(style==4)rgbDockBackground=panelBg;
         frame.addView(box,new FrameLayout.LayoutParams(panelW,-2));
