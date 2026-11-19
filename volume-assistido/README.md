@@ -72,3 +72,33 @@ Os novos temas alteram não só a cor mas **forma, gradientes, contornos, superf
 **Tecnologia:** desenhos feitos com APIs nativas Android (GradientDrawable), sem WebView ou bibliotecas externas. Liquid Glass é uma aparência de vidro translúcido, não um desfoque real da tela de outros aplicativos. RGB contínuo permanece restrito ao tema RGB ∞ para economizar recursos.
 
 **Assinatura:** o APK v0.3.0 de teste foi assinado com a chave debug temporária do runner anterior. O APK v0.4.0 de teste, se compilado em outro runner, terá outra chave; nesse caso o Android não permite atualizar por cima. É necessário desinstalar a versão de teste anterior antes de instalar a nova, perdendo as configurações locais. Para atualização direta e preservação das preferências nas próximas versões, configurar uma assinatura persistente protegida (GitHub Secrets) antes de distribuir a versão estável.
+
+
+## Atualização diretamente no aplicativo (preparada para a próxima versão)
+
+Na área **Aplicativo > Atualizar aplicativo**, o NIVO poderá:
+1. Consultar `update.json` do repositório público.
+2. Pedir aprovação antes de baixar uma nova versão.
+3. Baixar o APK internamente em cache privado, sem navegador ou gerenciador de arquivos.
+4. Comparar o SHA-256 do arquivo ao valor declarado em `update.json`.
+5. Conferir identificador do pacote, versão e **assinatura Android** contra o aplicativo instalado.
+6. Solicitar, uma única vez, autorização do Android para "Instalar apps desconhecidos" por essa origem, se necessário.
+7. Abrir o instalador Android; o usuário **sempre confirma** a instalação. Não há atualização silenciosa.
+
+Arquivos: `UpdateManager.java`, `UpdateApkProvider.java`, `AndroidManifest.xml` e `MainActivity.java`.
+
+**Importante:** esse recurso já está no código-fonte e passou pela compilação Android, mas NÃO está no APK 0.4.0 anteriormente publicado. Precisa ser entregue numa nova versão.
+
+### Assinatura permanente: requisito para preservar os dados
+
+Os APKs de teste 0.3.0 e 0.4.0 foram assinados por **chaves debug temporárias diferentes**. A chave privada da assinatura 0.4.0 não foi preservada para reutilização. O Android não aceita substituir esse APK por outro assinado por uma chave diferente.
+
+Para começar a atualizar sem reinstalar:
+- Criar e guardar uma **keystore de produção** de propriedade do usuário, com backup privado e seguro.
+- Cadastrar quatro GitHub Actions Secrets em `helbermoura2/cena-downloads`: `NIVO_KEYSTORE_B64` (keystore binária codificada em base64), `NIVO_STORE_PASS`, `NIVO_KEY_ALIAS`, `NIVO_KEY_PASS`. **Nunca** publicar keystore ou senhas neste repositório público.
+- Preparar uma versão com `versionCode` maior e executar manualmente `.github/workflows/nivo-stable-release.yml`. Ela compila, assina com a chave persistente, publica o APK e atualiza o manifesto com URL e SHA-256.
+- **Uma última substituição manual da versão de teste 0.4.0 será necessária** ao mudar para a assinatura permanente. A partir dessa versão estável, atualizar por cima manterá as configurações, desde que a mesma keystore seja usada nos lançamentos seguintes.
+
+A antiga compilação debug agora publica apenas um artefato de teste temporário, nunca um APK no Release público. `.github/workflows/nivo-verify-updater.yml` compila e valida o código sem publicar um novo APK.
+
+O NIVO não pede acesso ao armazenamento externo e não instala aplicativos sem confirmação explícita do Android. Não use `REQUEST_INSTALL_PACKAGES` para arquivos de origem diferente da URL de Releases indicada no projeto.
