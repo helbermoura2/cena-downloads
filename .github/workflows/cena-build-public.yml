@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: helbermoura2/teclado-br
-          ref: '1203fba24e4aaa18f84f366aec04053028026e5f'
+          ref: '192bbb52a064b5e63a56c9968669853c7ed4562e'
           token: ${{ secrets.CENA_PRIVATE_ACCESS }}
           persist-credentials: false
           path: source
