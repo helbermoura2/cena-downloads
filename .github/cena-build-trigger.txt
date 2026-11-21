@@ -1,3 +1,2 @@
-CENA 0.27.4 — corrigir carregamento do navegador
-217862a1db318e979b0d0a91c5f51f958005ff06
-availability.js + story-mist.png — módulo servido corretamente
+CENA 0.27.5
+7136e10697e18e9c0a716f0f75597e264f9036cb
