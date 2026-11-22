@@ -1,3 +1,3 @@
-CENA 0.28.5
-source=05a11d56ed06793d7429e99ba8d8949234aa4741
-142 testes; preservar busca regional, reforçar identificação por capa.
+CENA 0.28.6
+source=1379c658ff68a2b6adab3eb21d3831ce77581101
+Títulos brasileiros verificados pelo mesmo ID IMDb/TMDB; testes Android da nova ponte.
