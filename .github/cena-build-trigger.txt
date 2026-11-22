@@ -1,3 +1,3 @@
-CENA 0.28.3
-source=4353560e19a5e8bb85696051a94217aa3f9035bd
-Câmera: prévia JPEG, Gemini visual e recuperação de OCR do caso Hiroshima.
+CENA 0.28.4
+source=6b77b4601bfea911e838da6c19de9c38fd6b2c51
+UI premium, A maior, capas estáveis e estatísticas claras.
