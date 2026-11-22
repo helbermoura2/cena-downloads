@@ -1,3 +1,3 @@
 CENA 0.28.0
-source=e755a987bfacd7ce3e13670ade1ad5ba43e5b7d2
-Preservar Stories e Trakt da 0.27.9; integrar Gemini online.
+source=164d5501186c16d977b3c2825d72434523449396
+Instalação paralela CENA IA Novo, sem desinstalar a 0.27.9.
