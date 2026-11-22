@@ -1,3 +1,3 @@
 CENA 0.28.7
-source=65cd8128b405091d55c1f14c8fe40c6aa5202544
-160 testes; seleção do título preservada sem elenco, publicidade ou interface.
+source=e227d63dfe1a2508d9755456706e6d3d91335653
+161 testes; preservar o título completo entre fragmentos estilizados.
