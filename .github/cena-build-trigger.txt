@@ -1,3 +1,3 @@
 CENA 0.28.8
-source=594071821ce4531c71bf740be163220bd0b26825
-CENA Vision: tela Capturar modernizada; verificação de catálogo regional por identificação e não ordem de resultados.
+source=f17ce331a752cd95490637c807902f8334593f8c
+Reexecutar compilação CENA Vision após reparar check-camera-ai-browser.py para painel recolhível do Gemini.
