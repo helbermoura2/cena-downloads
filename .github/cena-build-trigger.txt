@@ -1,3 +1,3 @@
-CENA 0.28.0
-source=164d5501186c16d977b3c2825d72434523449396
-Instalação paralela CENA IA Novo, sem desinstalar a 0.27.9.
+CENA 0.28.1
+source=5f2955f75a76f6139c2c0a1bf6cf2fdd8784dcd5
+Corrigir Últimos vistos Nuvio, backup local e retorno dos controles.
