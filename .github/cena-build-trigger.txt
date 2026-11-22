@@ -1,3 +1,3 @@
 CENA 0.28.5
-source=4809176c994652d52955a1744935346b161370ac
-Reconhecimento pelo título completo; rejeitar filmes que apenas compartilham Auschwitz.
+source=64b72e1d55e480146b91f3341076b677693ca2db
+Validar títulos completos e tolerância ao OCR com pistas distintas.
