@@ -1,3 +1,3 @@
-CENA 0.28.1
-source=5f2955f75a76f6139c2c0a1bf6cf2fdd8784dcd5
-Corrigir Últimos vistos Nuvio, backup local e retorno dos controles.
+CENA 0.28.2
+source=767d95908a14ffc8ec3caec2de0959fa5148997a
+Gemini com salvar e testar, busca de épicos gregos e Story com mais imagem.
