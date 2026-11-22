@@ -1,3 +1,3 @@
 CENA 0.28.7
-source=8f2e8206e16ac05dc551cd8aca96b525b69c9cd6
-Separar título, elenco e premiação; conferir OCR real de layouts e fotos anteriores.
+source=f1a5e6a87cb92bb55532ea0bcf17ea0612573129
+158 testes; títulos e conectores preservados no OCR de capas.
