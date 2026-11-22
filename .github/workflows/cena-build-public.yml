@@ -10,6 +10,8 @@ jobs:
   build-and-publish:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
+    env:
+      CENA_NATIVE_BASE: '0.28.4'
     steps:
       - name: Verificar acesso privado
         env:
@@ -23,7 +25,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: helbermoura2/teclado-br
-          ref: '6b77b4601bfea911e838da6c19de9c38fd6b2c51'
+          ref: '4809176c994652d52955a1744935346b161370ac'
           token: ${{ secrets.CENA_PRIVATE_ACCESS }}
           persist-credentials: false
           path: source
@@ -64,6 +66,7 @@ jobs:
           cd source/cena
           bash /tmp/cena-browser-qa.sh
       - name: Preparar SDK e modelos
+        if: env.CENA_NATIVE_BASE == ''
         run: |
           sdkmanager 'platforms;android-35' 'build-tools;35.0.0' 'ndk;28.0.13004108'
           python3 source/cena/scripts/prepare-vision-model.py
@@ -74,6 +77,14 @@ jobs:
           cp /tmp/cena-llama/LICENSE source/cena/android/app/src/main/assets/licenses/llama.cpp.txt
           bash source/cena/scripts/build-local-ai.sh source/cena /tmp/cena-llama
           bash source/cena/scripts/trim-native.sh source/cena
+      - name: Preparar binários nativos idênticos da versão validada
+        if: env.CENA_NATIVE_BASE != ''
+        env:
+          CENA_PRIVATE_ACCESS: ${{ secrets.CENA_PRIVATE_ACCESS }}
+        run: |
+          sdkmanager 'platforms;android-35' 'build-tools;35.0.0' 'ndk;28.0.13004108'
+          curl -fL --retry 3 'https://github.com/helbermoura2/cena-downloads/releases/download/v0.28.4/CENA-0.28.4.apk' -o /tmp/cena-native-base.apk
+          python3 source/cena/scripts/prepare-web-update-native.py /tmp/cena-native-base.apk
       - name: Obter assinatura e versão anterior para teste
         env:
           GH_TOKEN: ${{ secrets.CENA_PRIVATE_ACCESS }}
@@ -83,6 +94,7 @@ jobs:
           chmod 600 "$RUNNER_TEMP/cena-signing/cena-preview.keystore"
           gh release download cena-v0.7.2 --repo helbermoura2/teclado-br --pattern CENA-0.7.2.apk --dir /tmp/cena-previous
       - name: Compilar testes Android
+        if: env.CENA_NATIVE_BASE == ''
         working-directory: source/cena/android
         env:
           CENA_KEYSTORE_PATH: ${{ runner.temp }}/cena-signing/cena-preview.keystore
@@ -93,16 +105,19 @@ jobs:
           cp app/build/outputs/apk/debug/app-debug.apk /tmp/cena-test-next.apk
           cp /tmp/cena-test-standard.apk app/build/outputs/apk/debug/app-debug.apk
       - name: Preparar modelo para teste Android
+        if: env.CENA_NATIVE_BASE == ''
         run: |
           curl -fL --retry 3 'https://huggingface.co/Qwen/Qwen3-0.6B-GGUF/resolve/23749fefcc72300e3a2ad315e1317431b06b590a/Qwen3-0.6B-Q8_0.gguf?download=true' -o /tmp/cena-smoke.gguf
           echo '9465e63a22add5354d9bb4b99e90117043c7124007664907259bd16d043bb031  /tmp/cena-smoke.gguf' | sha256sum -c -
           /tmp/cena-browser/bin/python -c "import yaml,pathlib; d=yaml.safe_load(pathlib.Path('source/.github/workflows/cena-vision-qa.yml').read_text()); s=next(x['with']['script'] for x in d['jobs']['local-model']['steps'] if str(x.get('uses','')).startswith('reactivecircus/android-emulator-runner@')); pathlib.Path('/tmp/cena-native-tests.sh').write_text(s)"
       - name: Preparar emulador Android
+        if: env.CENA_NATIVE_BASE == ''
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
       - name: Testar Android e instalação sobre versão anterior
+        if: env.CENA_NATIVE_BASE == ''
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
@@ -124,6 +139,7 @@ jobs:
             adb shell dumpsys activity activities > /tmp/cena-resumed.txt
             python3 -c "from pathlib import Path; import re; assert re.search(r'(?:topResumedActivity|mResumedActivity).*app.cena.mobile.next',Path('/tmp/cena-resumed.txt').read_text())"
       - name: Conferir reconhecimento das fotos
+        if: env.CENA_NATIVE_BASE == ''
         working-directory: source/cena
         run: node scripts/check-native-cover-identification.mjs
       - name: Compilar APK para celular
@@ -133,19 +149,20 @@ jobs:
         run: |
           rm -f app/src/main/assets/models/clip-vision.onnx
           gradle --no-daemon -PcenaAbi=arm64-v8a assembleDebug
-          cp app/build/outputs/apk/debug/app-debug.apk /tmp/CENA-0.28.4.apk
+          cp app/build/outputs/apk/debug/app-debug.apk /tmp/CENA-0.28.5.apk
           gradle --no-daemon -PcenaAbi=arm64-v8a -PcenaEdition=next assembleDebug
-          cp app/build/outputs/apk/debug/app-debug.apk /tmp/CENA-0.28.4-novo.apk
+          cp app/build/outputs/apk/debug/app-debug.apk /tmp/CENA-0.28.5-novo.apk
       - name: Verificar conteúdo e assinatura
         working-directory: source/cena
         run: |
-          python3 scripts/check-packaged-apk.py /tmp/CENA-0.28.4.apk
-          python3 scripts/check-packaged-apk.py /tmp/CENA-0.28.4-novo.apk app.cena.mobile.next
+          python3 -c "from zipfile import ZipFile; a=ZipFile('/tmp/cena-native-base.apk'); b=ZipFile('/tmp/CENA-0.28.5.apk'); names=[n for n in a.namelist() if n.startswith('lib/') and n.endswith('.so')]; assert names and all(a.read(n)==b.read(n) for n in names), 'Native binaries changed'"
+          python3 scripts/check-packaged-apk.py /tmp/CENA-0.28.5.apk
+          python3 scripts/check-packaged-apk.py /tmp/CENA-0.28.5-novo.apk app.cena.mobile.next
           curl -fL --retry 3 'https://github.com/helbermoura2/cena-downloads/releases/download/v0.23.0/CENA-0.23.0.apk' -o /tmp/CENA-0.23.0.apk
           echo 'd24980ca199131851a97dabe153c58f76f7c423cba6c86c0b542202c2da6ba65  /tmp/CENA-0.23.0.apk' | sha256sum -c -
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs /tmp/CENA-0.23.0.apk > /tmp/cena-old-cert.txt
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs /tmp/CENA-0.28.4.apk > /tmp/cena-new-cert.txt
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs /tmp/CENA-0.28.4-novo.apk > /tmp/cena-next-cert.txt
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs /tmp/CENA-0.28.5.apk > /tmp/cena-new-cert.txt
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs /tmp/CENA-0.28.5-novo.apk > /tmp/cena-next-cert.txt
           python3 -c "from pathlib import Path; import re; get=lambda p:re.search(r'Signer #1 certificate SHA-256 digest: ([0-9a-f]+)',Path(p).read_text()).group(1); assert get('/tmp/cena-old-cert.txt')==get('/tmp/cena-new-cert.txt')==get('/tmp/cena-next-cert.txt'), 'Assinatura permanente divergente'"
       - name: Conferir preservação dos Stories e motivo da instalação paralela
         working-directory: source/cena
@@ -154,9 +171,9 @@ jobs:
           echo '99331b40a8c02da2e2eb94ba4f166e7a316216c1a946532a0d1712c500b27c8b  /tmp/CENA-0.27.9.apk' | sha256sum -c -
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs /tmp/CENA-0.27.9.apk > /tmp/cena-0279-cert.txt
           python3 -c "from pathlib import Path; import re; get=lambda p:re.search(r'Signer #1 certificate SHA-256 digest: ([0-9a-f]+)',Path(p).read_text()).group(1); assert get('/tmp/cena-0279-cert.txt')!=get('/tmp/cena-new-cert.txt'), 'Reavaliar necessidade da migração'"
-          python3 -c "import zipfile; from pathlib import Path; old=zipfile.ZipFile('/tmp/CENA-0.27.9.apk'); new=zipfile.ZipFile('/tmp/CENA-0.28.4-novo.apk'); assert new.read('assets/story-layout.js')==Path('web/story-layout.js').read_bytes(), 'Layout diferente do código validado'"
+          python3 -c "import zipfile; from pathlib import Path; old=zipfile.ZipFile('/tmp/CENA-0.27.9.apk'); new=zipfile.ZipFile('/tmp/CENA-0.28.5-novo.apk'); assert new.read('assets/story-layout.js')==Path('web/story-layout.js').read_bytes(), 'Layout diferente do código validado'"
       - name: Publicar atualização no canal público
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create v0.28.4 /tmp/CENA-0.28.4.apk /tmp/CENA-0.28.4-novo.apk --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'CENA 0.28.4' --notes-file source/cena/docs/CENA-0.28.4.md --latest
+          gh release create v0.28.5 /tmp/CENA-0.28.5.apk /tmp/CENA-0.28.5-novo.apk --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'CENA 0.28.5' --notes-file source/cena/docs/CENA-0.28.5.md --latest
