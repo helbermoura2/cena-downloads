@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: helbermoura2/teclado-br
-          ref: '4032300486a3761401475104e8a7cf296d51b20d'
+          ref: 'e755a987bfacd7ce3e13670ade1ad5ba43e5b7d2'
           token: ${{ secrets.CENA_PRIVATE_ACCESS }}
           persist-credentials: false
           path: source
@@ -124,9 +124,17 @@ jobs:
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs /tmp/CENA-0.23.0.apk > /tmp/cena-old-cert.txt
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs android/app/build/outputs/apk/debug/app-debug.apk > /tmp/cena-new-cert.txt
           python3 -c "from pathlib import Path; import re; get=lambda p:re.search(r'Signer #1 certificate SHA-256 digest: ([0-9a-f]+)',Path(p).read_text()).group(1); assert get('/tmp/cena-old-cert.txt')==get('/tmp/cena-new-cert.txt'), 'Assinatura divergente'"
+      - name: Conferir compatibilidade com CENA 0.27.9 de teste
+        working-directory: source/cena
+        run: |
+          curl -fL --retry 3 'https://raw.githubusercontent.com/helbermoura2/cena-downloads/ed6d050287d63a82fc037a0c72e005d3225cbcf9/CENA-0.27.9-arm64.apk' -o /tmp/CENA-0.27.9.apk
+          echo '99331b40a8c02da2e2eb94ba4f166e7a316216c1a946532a0d1712c500b27c8b  /tmp/CENA-0.27.9.apk' | sha256sum -c -
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs /tmp/CENA-0.27.9.apk > /tmp/cena-0279-cert.txt
+          python3 -c "from pathlib import Path; import re; get=lambda p:re.search(r'Signer #1 certificate SHA-256 digest: ([0-9a-f]+)',Path(p).read_text()).group(1); assert get('/tmp/cena-0279-cert.txt')==get('/tmp/cena-new-cert.txt'), 'Assinatura divergente da 0.27.9'"
+          python3 -c "import zipfile; from pathlib import Path; old=zipfile.ZipFile('/tmp/CENA-0.27.9.apk'); new=zipfile.ZipFile('android/app/build/outputs/apk/debug/app-debug.apk'); assert old.read('assets/story-layout.js')==new.read('assets/story-layout.js'), 'Stories 0.27.9 alterados'"
       - name: Publicar atualização no canal público
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp source/cena/android/app/build/outputs/apk/debug/app-debug.apk /tmp/CENA-0.27.5.apk
-          gh release create v0.27.5 /tmp/CENA-0.27.5.apk --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'CENA 0.27.5' --notes-file source/cena/docs/CENA-0.27.5.md --latest
+          cp source/cena/android/app/build/outputs/apk/debug/app-debug.apk /tmp/CENA-0.28.0.apk
+          gh release create v0.28.0 /tmp/CENA-0.28.0.apk --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'CENA 0.28.0' --notes-file source/cena/docs/CENA-0.28.0.md --latest
