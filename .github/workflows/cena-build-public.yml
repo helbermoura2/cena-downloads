@@ -12,6 +12,7 @@ jobs:
     timeout-minutes: 60
     env:
       CENA_NATIVE_BASE: '0.28.4'
+      CENA_MAVEN_CENTRAL_URL: https://maven-central.storage-download.googleapis.com/maven2
     steps:
       - name: Verificar acesso privado
         env:
@@ -25,7 +26,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: helbermoura2/teclado-br
-          ref: 'ac8cdaf0c1ee079a9f80930e4c29090907d09e7e'
+          ref: '410447bbcfc556c4dff32856ee67de3784b359fc'
           token: ${{ secrets.CENA_PRIVATE_ACCESS }}
           persist-credentials: false
           path: source
