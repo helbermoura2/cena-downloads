@@ -26,7 +26,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: helbermoura2/teclado-br
-          ref: '410447bbcfc556c4dff32856ee67de3784b359fc'
+          ref: 'a8e1922fc54f5200c2ba740e16366ec595f16bfb'
           token: ${{ secrets.CENA_PRIVATE_ACCESS }}
           persist-credentials: false
           path: source
@@ -142,6 +142,20 @@ jobs:
         if: env.CENA_NATIVE_BASE == ''
         working-directory: source/cena
         run: node scripts/check-native-cover-identification.mjs
+      - name: Configurar réplica Maven no Gradle do executor
+        run: |
+          mkdir -p "$GRADLE_USER_HOME/init.d"
+          cat > "$GRADLE_USER_HOME/init.d/cena-maven.gradle" <<'GRADLE'
+          gradle.beforeSettings { settings ->
+            [settings.pluginManagement.repositories, settings.dependencyResolutionManagement.repositories].each { repositories ->
+              repositories.withType(org.gradle.api.artifacts.repositories.MavenArtifactRepository).all { repository ->
+                if (repository.name == 'MavenRepo') {
+                  repository.url = System.getenv('CENA_MAVEN_CENTRAL_URL')
+                }
+              }
+            }
+          }
+          GRADLE
       - name: Compilar testes Android da leitura de capas
         if: env.CENA_NATIVE_BASE != ''
         working-directory: source/cena/android
