@@ -1,6 +1,11 @@
 name: NIVO - publicar versao estavel assinada
 on:
   workflow_dispatch:
+    inputs:
+      sign_locally:
+        description: Preparar compilação em rascunho para assinatura fora do GitHub
+        type: boolean
+        default: false
 permissions:
   contents: write
 concurrency:
@@ -20,6 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Exigir assinatura persistente privada
+        if: ${{ ! inputs.sign_locally }}
         shell: bash
         run: |
           set -euo pipefail
@@ -46,7 +52,20 @@ jobs:
       - name: Compilar APK release
         shell: bash
         run: gradle --no-daemon -p volume-assistido :app:assembleRelease
+      - name: Preparar binários para assinatura local
+        if: inputs.sign_locally
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p local-signing
+          cp volume-assistido/app/build/outputs/apk/release/app-release-unsigned.apk local-signing/
+          cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" local-signing/
+          cp "$ANDROID_HOME/build-tools/35.0.0/aapt" local-signing/
+          (cd local-signing && sha256sum app-release-unsigned.apk apksigner.jar aapt > STAGING-SHA256SUMS.txt)
+          VERSION=$(awk -F"'" '/versionName/{print $2; exit}' volume-assistido/app/build.gradle)
+          gh release create "nivo-v$VERSION" local-signing/* --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --draft --latest=false --title "NIVO Volume $VERSION" --notes "Rascunho temporário aguardando assinatura local."
       - name: Assinar com a MESMA chave em todas as versoes
+        if: ${{ ! inputs.sign_locally }}
         shell: bash
         run: |
           set -euo pipefail
@@ -82,6 +101,7 @@ jobs:
           echo "NIVO_FILE=$FILE" >> "$GITHUB_ENV"
           rm -rf private-signing
       - name: Publicar APK assinado em GitHub Releases
+        if: ${{ ! inputs.sign_locally }}
         shell: bash
         run: |
           set -euo pipefail
@@ -93,6 +113,7 @@ jobs:
             --title "NIVO Volume $NIVO_VERSION" \
             --notes "Versao assinada de forma persistente. Atualizacoes futuras do NIVO devem usar a MESMA chave de assinatura. A primeira transicao de uma versao debug temporaria pode exigir uma unica reinstalacao."
       - name: Publicar indice update.json com versao e SHA-256
+        if: ${{ ! inputs.sign_locally }}
         shell: bash
         run: |
           set -euo pipefail
