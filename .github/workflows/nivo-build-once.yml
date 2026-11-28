@@ -1,6 +1,11 @@
 name: NIVO Volume - APK de teste gratuito
 on:
   workflow_dispatch:
+    inputs:
+      publish_test:
+        description: Publicar APK de teste como prévia
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -53,3 +58,25 @@ jobs:
           name: NIVO-debug-nao-usar-como-atualizacao
           path: output/
           retention-days: 7
+  publish-test:
+    if: inputs.publish_test && github.repository == 'helbermoura2/cena-downloads' && github.ref_name == 'feat/nivo-volume-sidebar'
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: NIVO-debug-nao-usar-como-atualizacao
+          path: output
+      - name: Publicar download direto do APK de teste
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cd output
+          sha256sum -c SHA256SUMS.txt
+          gh release create nivo-volume-v0.6.0-test NIVO-Volume-0.6.0-teste.apk SHA256SUMS.txt \
+            --repo "$GITHUB_REPOSITORY" --verify-tag --prerelease --latest=false \
+            --title 'NIVO Volume 0.6.0 · teste' \
+            --notes 'APK de teste do NIVO com barra lateral e botões separados. A assinatura de teste pode impedir a instalação por cima da versão 0.4.0.'
