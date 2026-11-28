@@ -1,3 +1,3 @@
 CENA IA 0.28.29
-source=645485bfa066d1277c462014120985c5de251e0d
-Importação Trakt direta e teste da transferência Nuvio.
+source=05719b6b4672ae792b187401e39c225a1aedf9a8
+Recompilar com diário editorial, carrossel estável e importação Trakt.
