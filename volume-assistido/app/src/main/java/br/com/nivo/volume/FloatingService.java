@@ -75,7 +75,9 @@ public class FloatingService extends Service {
     private int a(){return Prefs.accent(this);}
     private int buttonDp(){return Math.max(38,Math.min(92,Prefs.integer(this,"button_size",52)));}
     private int gapDp(){return Math.max(28,Math.min(116,Prefs.integer(this,"button_gap",32)));}
-    private int dockWidth(){return s(buttonDp()+10);}
+    private boolean showQuickSlider(){return Prefs.flag(this,"quick_slider",true);}
+    private int sliderWidth(){return Math.max(dp(44),s(44));}
+    private int dockWidth(){return s(buttonDp()+10)+(showQuickSlider()?sliderWidth()+s(5):0);}
     private int dockHeight(){return s(buttonDp()*2+gapDp()+10);}
     private void clampDock(){
         if(params==null)return;
@@ -198,8 +200,13 @@ public class FloatingService extends Service {
         if(expanded) showExpanded();
         else showCollapsed();
         wm.updateViewLayout(frame,params);
-        frame.setAlpha(0.86f);frame.setScaleX(0.96f);frame.setScaleY(0.96f);
-        frame.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(180L).start();
+        frame.animate().cancel();
+        if(android.animation.ValueAnimator.areAnimatorsEnabled()){
+            frame.setAlpha(.86f);frame.setScaleX(.96f);frame.setScaleY(.96f);
+            frame.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(160L).start();
+        }else{
+            frame.setAlpha(1f);frame.setScaleX(1f);frame.setScaleY(1f);
+        }
         scheduleCollapse();
         restartRGB();
     }
@@ -227,21 +234,62 @@ public class FloatingService extends Service {
         dock.addView(minus,new LinearLayout.LayoutParams(size,size));
 
         ThemeStyles.applyDock(this,style,a(),scale(),dock,plus,minus,percentage);
-        frame.addView(dock);
+        boolean separate=Prefs.flag(this,"separate_buttons",true);
+        if(separate){
+            dock.setBackground(null);dock.setElevation(0);
+            percentage.setBackground(Ui.rounded(0xFF111B28,s(14),ThemeStyles.highlight(style,a()),dp(1)));
+            ThemeStyles.outlineButton(this,style,a(),scale(),plus,minus);
+        }
+        LinearLayout controls=Ui.row(this);
+        controls.setGravity(Gravity.CENTER_VERTICAL);
+        boolean sliderRight=Prefs.flag(this,"quick_slider_right",false);
+        SeekBar slider=showQuickSlider()?quickSlider(controls,sliderRight,dock,percentage,style):null;
+        if(slider==null)controls.addView(dock);
+        frame.addView(controls);
         if(style==4){
-            rgbDockBackground=(GradientDrawable)dock.getBackground();
+            if(dock.getBackground() instanceof GradientDrawable)rgbDockBackground=(GradientDrawable)dock.getBackground();
             rgbPlus=plus;rgbMinus=minus;
         }
         updateQuickPercentage(percentage);
         plus.setOnClickListener(v->{
             v.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP);
-            quickStep(1,percentage);
+            quickStep(1,percentage);if(slider!=null)slider.setProgress(audio.getStreamVolume(STREAMS[selected]));
         });
         minus.setOnClickListener(v->{
             v.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP);
-            quickStep(-1,percentage);
+            quickStep(-1,percentage);if(slider!=null)slider.setProgress(audio.getStreamVolume(STREAMS[selected]));
         });
         percentage.setOnTouchListener(this::dragOrOpen);
+    }
+    private SeekBar quickSlider(LinearLayout controls,boolean right,View dock,TextView percentage,int style){
+        int stream=STREAMS[selected],width=sliderWidth(),height=dockHeight();
+        FrameLayout rail=new FrameLayout(this);
+        rail.setClipChildren(false);rail.setClipToPadding(false);
+        rail.setBackground(Ui.rounded(0xF0111B28,s(20),0xFF435368,dp(1)));
+        SeekBar slider=new SeekBar(this);
+        slider.setContentDescription("Volume de "+NAMES[selected]);
+        slider.setRotation(-90);
+        slider.setMax(audio.getStreamMaxVolume(stream));
+        if(Build.VERSION.SDK_INT>=28)slider.setMin(audio.getStreamMinVolume(stream));
+        slider.setProgress(audio.getStreamVolume(stream));
+        int tint=ThemeStyles.highlight(style,a());
+        slider.setProgressTintList(ColorStateList.valueOf(tint));
+        slider.setThumbTintList(ColorStateList.valueOf(tint));
+        slider.setProgressBackgroundTintList(ColorStateList.valueOf(0xFF435368));
+        rail.addView(slider,new FrameLayout.LayoutParams(height,width,Gravity.CENTER));
+        LinearLayout.LayoutParams railParams=new LinearLayout.LayoutParams(width,height);
+        if(right){controls.addView(dock);railParams.leftMargin=s(5);controls.addView(rail,railParams);}
+        else{railParams.rightMargin=s(5);controls.addView(rail,railParams);controls.addView(dock);}
+        slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+            @Override public void onProgressChanged(SeekBar bar,int value,boolean fromUser){
+                if(!fromUser)return;
+                if(value!=audio.getStreamVolume(stream))changeVolume(stream,value);
+                updateQuickPercentage(percentage);
+            }
+            @Override public void onStartTrackingTouch(SeekBar bar){}
+            @Override public void onStopTrackingTouch(SeekBar bar){bar.setProgress(audio.getStreamVolume(stream));}
+        });
+        return slider;
     }
     private void updateQuickPercentage(TextView label){
         int stream=STREAMS[selected];

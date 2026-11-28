@@ -15,10 +15,10 @@ final class ThemeStyles {
     static final String[] NAMES = {
         "Minimal", "Glass", "Neon", "Aurora", "RGB ∞",
         "Liquid Glass", "Titanium", "Carbon", "Synthwave",
-        "Pearl", "Pixel", "Candy"
+        "Pearl", "Pixel", "Candy", "Néon gelo", "Néon violeta", "Néon lima"
     };
     static final String[] SYMBOLS = {
-        "●","◌","✦","◈","∞","◉","⬡","▨","☾","◍","▣","♥"
+        "●","◌","✦","◈","∞","◉","⬡","▨","☾","◍","▣","♥","◇","✧","△"
     };
     private ThemeStyles(){}
 
@@ -32,6 +32,9 @@ final class ThemeStyles {
             case 9: return 0xFF7789A4;
             case 10: return 0xFF9AFF74;
             case 11: return 0xFFFF91B9;
+            case 12: return 0xFF66E9FF;
+            case 13: return 0xFFD6A0FF;
+            case 14: return 0xFFB7F952;
             default: return accent;
         }
     }
@@ -44,6 +47,9 @@ final class ThemeStyles {
             case 9:return 0xFFE8EFF5;
             case 10:return 0xFF14291D;
             case 11:return 0xFF55364C;
+            case 12:return 0xFF0B2530;
+            case 13:return 0xFF24143C;
+            case 14:return 0xFF1B2813;
             default:return 0xFF152334;
         }
     }
@@ -55,6 +61,14 @@ final class ThemeStyles {
     }
     private static GradientDrawable solid(Context c,int color,float corner,int strokeColor,int strokeDp){
         return Ui.rounded(color,d(c,corner),strokeColor,d(c,strokeDp));
+    }
+    static void outlineButton(Context c,int style,int accent,float scale,TextView plus,TextView minus){
+        if(style!=2&&style!=4&&style!=8&&style<12)return;
+        int light=highlight(style,accent);
+        for(TextView button:new TextView[]{plus,minus}){
+            button.setBackground(grad(c,new int[]{tileBg(style),0xFF080F19},18*scale,light,2));
+            button.setTextColor(light);
+        }
     }
     static void applyDock(Context c,int style,int accent,float scale,
                           LinearLayout dock,TextView plus,TextView minus,TextView mid){
@@ -148,6 +162,12 @@ final class ThemeStyles {
                 minus.setBackground(grad(c,new int[]{0xFF715271,0xFF473251},rounded,0xFFCC8EC4,1));
                 plus.setTextColor(0xFF43213E);minus.setTextColor(0xFFFFE5F5);mid.setTextColor(0xFFFFB3D9);
                 dock.setElevation(d(c,7*scale));
+                break;
+            case 12: case 13: case 14:
+                int light=highlight(style,accent);
+                dock.setBackground(grad(c,new int[]{tileBg(style),0xFF090F1A},23*scale,light,1));
+                outlineButton(c,style,accent,scale,plus,minus);
+                mid.setTextColor(light);
                 break;
             default: applyDock(c,1,accent,scale,dock,plus,minus,mid);
         }

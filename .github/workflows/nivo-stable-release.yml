@@ -8,6 +8,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   sign-and-release:
+    if: github.repository == 'helbermoura2/cena-downloads' && github.ref_name == 'main'
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
@@ -60,13 +61,21 @@ jobs:
           INPUT=volume-assistido/app/build/outputs/apk/release/app-release-unsigned.apk
           test -s "$INPUT"
           FILE="NIVO-Volume-${VERSION}.apk"
-          apksigner sign \
+          SIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
+          "$SIGNER" sign \
             --ks private-signing/nivo-release.jks \
             --ks-key-alias "$NIVO_KEY_ALIAS" \
             --ks-pass env:NIVO_STORE_PASS \
             --key-pass env:NIVO_KEY_PASS \
             --out "output/$FILE" "$INPUT"
-          apksigner verify --verbose "output/$FILE"
+          CERT=$("$SIGNER" verify --print-certs "output/$FILE" | awk -F': ' '/^Signer #1 certificate SHA-256 digest:/ {print $2}')
+          test -n "$CERT"
+          PREVIOUS_CERT=$(jq -r '.certificateSha256 // empty' volume-assistido/update.json)
+          if [ -n "$PREVIOUS_CERT" ] && [ "$CERT" != "$PREVIOUS_CERT" ]; then
+            echo "A assinatura não corresponde ao canal oficial do NIVO."
+            exit 1
+          fi
+          echo "NIVO_CERT=$CERT" >> "$GITHUB_ENV"
           (cd output && sha256sum "$FILE" > SHA256SUMS.txt)
           echo "NIVO_VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "NIVO_VERSION_CODE=$VERSION_CODE" >> "$GITHUB_ENV"
@@ -80,6 +89,7 @@ jobs:
             "output/$NIVO_FILE" output/SHA256SUMS.txt \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
+            --latest=false \
             --title "NIVO Volume $NIVO_VERSION" \
             --notes "Versao assinada de forma persistente. Atualizacoes futuras do NIVO devem usar a MESMA chave de assinatura. A primeira transicao de uma versao debug temporaria pode exigir uma unica reinstalacao."
       - name: Publicar indice update.json com versao e SHA-256
@@ -99,6 +109,7 @@ jobs:
               "apkUrl":"https://github.com/"+os.environ["GITHUB_REPOSITORY"]+
                   "/releases/download/nivo-v"+version+"/"+filename,
               "sha256":open("output/SHA256SUMS.txt",encoding="utf-8").read().split()[0],
+              "certificateSha256":os.environ["NIVO_CERT"],
               "notes":"Nova versao do NIVO Volume disponivel para atualizacao pelo aplicativo."
           })
           with open(path,"w",encoding="utf-8") as f:
