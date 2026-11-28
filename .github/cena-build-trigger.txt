@@ -1,3 +1,3 @@
 CENA IA 0.28.31
-source=402f4d5d7629ced9fd0528768f703e1d69fde62a
-Compilar com Trakt somente leitura e histórico manual.
+source=120a1d505d7dbdb27ab1f6c9c1fbeff3558ed145
+Compilação nativa completa e validação Android com 51 testes; preservar assinatura.
