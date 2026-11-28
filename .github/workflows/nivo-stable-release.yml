@@ -6,6 +6,10 @@ on:
         description: Preparar compilação em rascunho para assinatura fora do GitHub
         type: boolean
         default: false
+      publish_local_060:
+        description: Publicar a versão 0.6.0 assinada localmente e verificada
+        type: boolean
+        default: false
 permissions:
   contents: write
 concurrency:
@@ -13,7 +17,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   sign-and-release:
-    if: github.repository == 'helbermoura2/cena-downloads' && github.ref_name == 'main'
+    if: github.repository == 'helbermoura2/cena-downloads' && github.ref_name == 'main' && !inputs.publish_local_060
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
@@ -142,3 +146,27 @@ jobs:
           git add volume-assistido/update.json
           git commit -m "release(nivo): atualizar indice de APK assinado $NIVO_VERSION" || exit 0
           git push origin HEAD:main
+
+  publish-local-060:
+    if: github.repository == 'helbermoura2/cena-downloads' && github.ref_name == 'main' && inputs.publish_local_060
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: '041193444c56aeed200c692effaad19b229d93cc'
+      - name: Publicar APK local verificado
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag=nivo-v0.6.0
+          gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft | grep -qx true
+          echo '2417f366439295ed5c575a893a20bbb9d84b6a91f41e387cdfd70af691b0a1bb  NIVO-Volume-0.6.0.apk' | sha256sum -c -
+          sha256sum -c SHA256SUMS.txt
+          gh release upload "$tag" NIVO-Volume-0.6.0.apk SHA256SUMS.txt --repo "$GITHUB_REPOSITORY"
+          for asset in app-release-unsigned.apk apksigner.jar aapt STAGING-SHA256SUMS.txt; do
+            gh release delete-asset "$tag" "$asset" --repo "$GITHUB_REPOSITORY" --yes
+          done
+          gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --draft=false --prerelease=false --latest=false \
+            --title 'NIVO Volume 0.6.0' \
+            --notes 'Primeira versão oficial com assinatura permanente, botões separados e barra lateral. A versão de teste pode exigir reinstalação por diferença de assinatura.'
