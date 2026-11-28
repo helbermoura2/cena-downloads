@@ -91,7 +91,7 @@ public class MainActivity extends Activity {
         TextView logo=Ui.text(this,"N I V O",17,Prefs.TEXT,true);logo.setLetterSpacing(.14f);
         names.addView(logo);names.addView(Ui.text(this,"CONTROLE DE VOLUME",10,Prefs.MUTED,true));
         brand.addView(names,new LinearLayout.LayoutParams(0,-2,1));
-        TextView tag=Ui.text(this,"v0.4",11,a(),true);
+        TextView tag=Ui.text(this,"v"+BuildConfig.VERSION_NAME,11,a(),true);
         tag.setPadding(d(12),d(7),d(12),d(7));tag.setBackground(Ui.rounded(0xFF182D3B,d(40),0,0));
         brand.addView(tag);
         root.addView(brand);
@@ -192,6 +192,15 @@ public class MainActivity extends Activity {
         }
         palette.addView(dots);root.addView(palette);
 
+        h(root,"Controle flutuante");
+        LinearLayout layout=card(17);
+        addSwitch(layout,"Botões separados","Mostra + e − sem a moldura externa","separate_buttons",true);
+        layout.addView(Ui.gap(this,12));
+        addSwitch(layout,"Barra lateral de volume","Toque ou arraste para ajustar na hora","quick_slider",true);
+        layout.addView(Ui.gap(this,12));
+        addSwitch(layout,"Barra à direita","Desative para deixar a barra à esquerda dos botões","quick_slider_right",false);
+        root.addView(layout);
+
         h(root,"Ajuste os detalhes");
         LinearLayout settings=card(17);
         addSlider(settings,"Tamanho dos botões + / −","button_size",38,92,52," dp",v->refreshService());
@@ -241,6 +250,7 @@ public class MainActivity extends Activity {
         Switch sw=new Switch(this);sw.setThumbTintList(ColorStateList.valueOf(a()));
         sw.setChecked(Prefs.flag(this,key,fallback));sw.setOnCheckedChangeListener((b,checked)->{
             Prefs.put(this,key,checked);refreshService();
+            if(key.equals("separate_buttons")||key.startsWith("quick_slider"))rebuild(scroll.getScrollY());
         });row.addView(sw);parent.addView(row);
     }
     interface IntChange {void accept(int value);}

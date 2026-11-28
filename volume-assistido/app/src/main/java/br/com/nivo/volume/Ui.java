@@ -84,27 +84,46 @@ final class Ui {
             p.setTypeface(android.graphics.Typeface.create("sans-serif-medium",0));
             p.setTextSize(dp(context,11));p.setColor(0xFFABB9CF);
             c.drawText("PRÉVIA DO SEU CONTROLE",dp(context,36),dp(context,37),p);
-            int btn=Prefs.integer(context,"button_size",52);
-            int gap=Prefs.integer(context,"button_gap",32);
-            float pw=dp(context,Math.max(92,btn+42)),ph=dp(context,Math.max(144,btn*2+gap+20));
-            float x=(w-pw)/2,y=dp(context,60);
-            if(y+ph>h-dp(context,36)) y=Math.max(dp(context,52),h-ph-dp(context,36));
-            p.setShadowLayer(dp(context,28),0,dp(context,12),style==2||style==8?theme:0xAA000000);
-            rect(c,x,y,x+pw,y+ph,dp(context,28),ThemeStyles.tileBg(style));
-            p.clearShadowLayer();
-            if(style>=2) {
-                p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(dp(context,1.5f));p.setColor(theme);r.set(x,y,x+pw,y+ph);c.drawRoundRect(r,dp(context,28),dp(context,28),p);p.setStyle(Paint.Style.FILL);
+            boolean separate=Prefs.flag(context,"separate_buttons",true);
+            boolean slider=Prefs.flag(context,"quick_slider",true);
+            boolean right=Prefs.flag(context,"quick_slider_right",false);
+            float ratio=Math.min(1f,(h-dp(context,96))/dp(context,Prefs.integer(context,"button_size",52)*2+Prefs.integer(context,"button_gap",32)+10));
+            float btn=dp(context,Prefs.integer(context,"button_size",52))*ratio;
+            float gap=dp(context,Prefs.integer(context,"button_gap",32))*ratio;
+            float railWidth=dp(context,32),space=dp(context,8);
+            float width=btn+(slider?railWidth+space:0);
+            float ph=btn*2+gap,y=dp(context,54),x=(w-width)/2;
+            float buttonsX=slider&&!right?x+railWidth+space:x;
+            if(!separate)rect(c,buttonsX-space,y-space,buttonsX+btn+space,y+ph+space,dp(context,20),ThemeStyles.tileBg(style));
+            if(slider){
+                float railX=right?buttonsX+btn+space:x;
+                rect(c,railX,y,railX+railWidth,y+ph,dp(context,15),0xFF101B29);
+                float railCenter=railX+railWidth/2;
+                float top=y+dp(context,12),bottom=y+ph-dp(context,12),thumb=bottom-(bottom-top)*.63f;
+                rect(c,railCenter-dp(context,2),top,railCenter+dp(context,2),bottom,dp(context,2),0xFF455368);
+                rect(c,railCenter-dp(context,2),thumb,railCenter+dp(context,2),bottom,dp(context,2),theme);
+                p.setColor(theme);c.drawCircle(railCenter,thumb,dp(context,5),p);
             }
-            p.setColor(theme);
-            c.drawCircle(x+pw*0.5f,y+dp(context,38),dp(context,23),p);
-            p.setColor(0xFF08101A);p.setTypeface(android.graphics.Typeface.create("sans-serif-medium",1));p.setTextSize(dp(context,27));
-            float first=y+dp(context,btn*.65f);
-            c.drawText("+",x+pw*.5f-dp(context,8),first,p);
-            float mid=y+dp(context,btn+gap/2f+9);
+            boolean neon=style==2||style==4||style==8||style>=12;
+            float minusY=y+btn+gap;
+            rect(c,buttonsX,y,buttonsX+btn,y+btn,dp(context,14),neon?ThemeStyles.tileBg(style):theme);
+            rect(c,buttonsX,minusY,buttonsX+btn,minusY+btn,dp(context,14),ThemeStyles.tileBg(style));
+            if(neon){
+                p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(dp(context,1.5f));p.setColor(theme);
+                for(float keyY:new float[]{y,minusY}){
+                    r.set(buttonsX,keyY,buttonsX+btn,keyY+btn);
+                    c.drawRoundRect(r,dp(context,14),dp(context,14),p);
+                }
+                p.setStyle(Paint.Style.FILL);
+            }
+            p.setTypeface(android.graphics.Typeface.create("sans-serif-medium",1));p.setTextSize(dp(context,24));
+            p.setTextAlign(Paint.Align.CENTER);p.setColor(neon?theme:0xFF08101A);
+            c.drawText("+",buttonsX+btn/2,y+btn/2+dp(context,8),p);
+            p.setColor(neon?theme:0xFFD8F7FF);
+            c.drawText("−",buttonsX+btn/2,minusY+btn/2+dp(context,8),p);
             p.setColor(theme);p.setTextSize(dp(context,12));
-            c.drawText("63%",x+pw*.5f-dp(context,13),mid,p);
-            p.setColor(0xFFD8F7FF);p.setTextSize(dp(context,25));
-            c.drawText("−",x+pw*.5f-dp(context,9),y+dp(context,btn+gap+btn*.65f),p);
+            c.drawText("63%",buttonsX+btn/2,y+btn+gap/2+dp(context,4),p);
+            p.setTextAlign(Paint.Align.LEFT);
             p.setColor(0xFFB5C1D2);p.setTextSize(dp(context,10));p.setTypeface(android.graphics.Typeface.create("sans-serif",0));
             c.drawText("ARRASTE • AJUSTE • RECOLHA",dp(context,30),h-dp(context,20),p);
         }

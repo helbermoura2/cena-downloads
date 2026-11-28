@@ -1,11 +1,10 @@
 name: NIVO Volume - APK de teste gratuito
-# build: 0.4 — 12 temas nativos, sem modificar o CENA
 on:
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: nivo-build-test-040
+  group: nivo-build-test
   cancel-in-progress: false
 jobs:
   build:
@@ -43,8 +42,11 @@ jobs:
           unzip -l "$APK" | grep -q 'classes.dex'
           unzip -l "$APK" | grep -q 'AndroidManifest.xml'
           mkdir -p output
-          cp "$APK" output/NIVO-Volume-0.4.0-teste.apk
-          cd output && sha256sum NIVO-Volume-0.4.0-teste.apk > SHA256SUMS.txt
+          VERSION=$(awk -F"'" '/versionName/{print $2; exit}' volume-assistido/app/build.gradle)
+          test -n "$VERSION"
+          FILE="NIVO-Volume-$VERSION-teste.apk"
+          cp "$APK" "output/$FILE"
+          cd output && sha256sum "$FILE" > SHA256SUMS.txt
       - name: Guardar APK debug apenas como artefato de teste
         uses: actions/upload-artifact@v4
         with:
