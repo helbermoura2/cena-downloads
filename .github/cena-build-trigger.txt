@@ -1,3 +1,3 @@
-CENA IA 0.28.29
-source=05719b6b4672ae792b187401e39c225a1aedf9a8
-Recompilar com diário editorial, carrossel estável e importação Trakt.
+CENA IA 0.28.30
+source=4825263acf6b47b21cc2f254ad9c79c3b9bafd7a
+Compilar com episódios individuais, correção de capas e rankings.
